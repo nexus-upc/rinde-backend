@@ -6,6 +6,9 @@ import com.nexus.rinde.iam.domain.model.events.PasswordResetRequested;
 import com.nexus.rinde.iam.domain.model.events.TenantRegistered;
 import com.nexus.rinde.iam.domain.model.events.UserInvited;
 import com.nexus.rinde.shared.domain.model.events.IntegrationEvent;
+import com.nexus.rinde.trip.domain.model.events.TripAssigned;
+import com.nexus.rinde.trip.domain.model.events.TripFinished;
+import com.nexus.rinde.trip.domain.model.events.TripStarted;
 import com.nexus.rinde.support.CapturedEvents;
 import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
@@ -68,6 +71,15 @@ public class CommonSteps {
     }
     if (event instanceof PasswordResetRequested reset) {
       return reset.email();
+    }
+    if (event instanceof TripAssigned assigned) {
+      return context.emailOfUserId(assigned.driverId().toString());
+    }
+    if (event instanceof TripStarted started) {
+      return context.emailOfUserId(started.driverId().toString());
+    }
+    if (event instanceof TripFinished finished) {
+      return context.emailOfUserId(finished.driverId().toString());
     }
     throw new IllegalArgumentException("Evento sin correo: " + event.type());
   }
