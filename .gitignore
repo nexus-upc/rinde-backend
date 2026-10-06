@@ -1,0 +1,28 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+dependency-reduced-pom.xml
+
+# IntelliJ IDEA (se conserva la carpeta .run con las configuraciones compartidas)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+!.run/
+
+# VS Code
+.vscode/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Pruebas locales
+src/test/java/com/nexus/rinde/*
+!src/test/java/com/nexus/rinde/acceptance/
+!src/test/java/com/nexus/rinde/support/
