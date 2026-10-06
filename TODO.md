@@ -20,14 +20,14 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 ### Trip Management (`trip`)
 
-- [ ] POST /api/v1/trips (US14)
-- [ ] PUT /api/v1/trips/{id}/assignment (US15)
-- [ ] GET /api/v1/trips?status= (US16)
-- [ ] GET /api/v1/trips/{id} (US17, US19)
-- [ ] GET /api/v1/trips/assigned-to-me (US18)
-- [ ] POST /api/v1/trips/{id}/start (US20)
-- [ ] POST /api/v1/trips/{id}/finish (US20)
-- [ ] Migración y pruebas `.feature`
+- [x] POST /api/v1/trips (US14)
+- [x] PUT /api/v1/trips/{id}/assignment (US15)
+- [x] GET /api/v1/trips?status= (US16)
+- [x] GET /api/v1/trips/{id} (US17, US19)
+- [x] GET /api/v1/trips/assigned-to-me (US18)
+- [x] POST /api/v1/trips/{id}/start (US20)
+- [x] POST /api/v1/trips/{id}/finish (US20)
+- [x] Migración y pruebas `.feature`
 
 ## Farid Briceño
 

@@ -20,6 +20,8 @@ public class ScenarioContext {
   private final Map<String, String> accessTokens = new HashMap<>();
   private final Map<String, String> tenantIds = new HashMap<>();
   private final Map<String, String> userIds = new HashMap<>();
+  private final Map<String, String> tripIds = new HashMap<>();
+  private final Map<String, String> vehicleIds = new HashMap<>();
   private MvcResult lastResult;
   private String currentAdministratorToken;
 
@@ -63,6 +65,30 @@ public class ScenarioContext {
 
   public String userIdOf(String email) {
     return userIds.get(email);
+  }
+
+  public void rememberTripId(String name, String tripId) {
+    tripIds.put(name, tripId);
+  }
+
+  public String tripIdOf(String name) {
+    return tripIds.get(name);
+  }
+
+  public void rememberVehicleId(String name, String vehicleId) {
+    vehicleIds.put(name, vehicleId);
+  }
+
+  public String vehicleIdOf(String name) {
+    return vehicleIds.get(name);
+  }
+
+  public String emailOfUserId(String userId) {
+    return userIds.entrySet().stream()
+        .filter(entry -> entry.getValue().equals(userId))
+        .map(Map.Entry::getKey)
+        .findFirst()
+        .orElse(null);
   }
 
   public String currentAdministratorToken() {
