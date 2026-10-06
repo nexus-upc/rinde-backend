@@ -3,13 +3,12 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 dependency-reduced-pom.xml
 
-# IntelliJ IDEA (se conserva la carpeta .run con las configuraciones compartidas)
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
 *.ipr
 out/
-!.run/
 
 # VS Code
 .vscode/
@@ -21,6 +20,9 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Configuración local de cada integrante
+src/main/resources/application.yml
 
 # Pruebas locales
 src/test/java/com/nexus/rinde/*
