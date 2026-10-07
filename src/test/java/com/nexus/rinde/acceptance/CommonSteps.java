@@ -81,6 +81,9 @@ public class CommonSteps {
     if (event instanceof TripFinished finished) {
       return context.emailOfUserId(finished.driverId().toString());
     }
+    if (event instanceof com.nexus.rinde.expense.domain.model.events.ExpenseObserved observed) {
+      return context.emailOfUserId(observed.driverId().toString());
+    }
     throw new IllegalArgumentException("Evento sin correo: " + event.type());
   }
 }

@@ -83,6 +83,8 @@ public class TripSteps {
     fleet.setDriverEnabled(false);
   }
 
+  @Dado(
+      "que el administrador programa el viaje {string} de {string} a {string} con carga {string} y salida {string}")
   @Cuando(
       "el administrador programa el viaje {string} de {string} a {string} con carga {string} y salida {string}")
   public void theAdministratorSchedulesTrip(
@@ -159,6 +161,7 @@ public class TripSteps {
             false));
   }
 
+  @Dado("que el administrador asigna el viaje {string} al vehículo {string} y al conductor {string}")
   @Cuando("el administrador asigna el viaje {string} al vehículo {string} y al conductor {string}")
   public void theAdministratorAssigns(String tripName, String vehicle, String driverEmail)
       throws Exception {
@@ -230,9 +233,15 @@ public class TripSteps {
     context.record(api.assignedToMe(context.currentAdministratorToken()));
   }
 
+  @Dado("que el conductor {string} inicia el viaje {string}")
   @Cuando("el conductor {string} inicia el viaje {string}")
   public void theDriverStartsTrip(String email, String tripName) throws Exception {
     context.record(api.start(context.accessTokenOf(email), context.tripIdOf(tripName)));
+  }
+
+  @Dado("que el conductor inicia el viaje {string}")
+  public void theDriverStartsTripDefault(String tripName) throws Exception {
+    theDriverStartsTrip("luis@andes.pe", tripName);
   }
 
   @Cuando("el conductor {string} intenta iniciar el viaje {string}")
@@ -240,6 +249,7 @@ public class TripSteps {
     context.record(api.start(context.accessTokenOf(email), context.tripIdOf(tripName)));
   }
 
+  @Dado("que el conductor {string} finaliza el viaje {string}")
   @Cuando("el conductor {string} finaliza el viaje {string}")
   public void theDriverFinishesTrip(String email, String tripName) throws Exception {
     context.record(api.finish(context.accessTokenOf(email), context.tripIdOf(tripName)));

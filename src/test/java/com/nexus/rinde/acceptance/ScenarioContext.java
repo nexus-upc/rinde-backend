@@ -23,6 +23,7 @@ public class ScenarioContext {
   private final Map<String, String> tripIds = new HashMap<>();
   private final Map<String, String> vehicleIds = new HashMap<>();
   private final Map<String, String> driverIds = new HashMap<>();
+  private final Map<String, String> expenseIds = new HashMap<>();
   private MvcResult lastResult;
   private String currentAdministratorToken;
 
@@ -90,6 +91,14 @@ public class ScenarioContext {
 
   public String driverIdOf(String name) {
     return driverIds.get(name);
+  }
+
+  public void rememberExpenseId(String name, String expenseId) {
+    expenseIds.put(name, expenseId);
+  }
+
+  public String expenseIdOf(String name) {
+    return expenseIds.get(name);
   }
 
   public String emailOfUserId(String userId) {

@@ -39,6 +39,14 @@ public class UserSteps {
     context.setCurrentAdministratorToken(token);
   }
 
+  @Dado("que el conductor {string} inició sesión")
+  public void theDriverSignedIn(String email) throws Exception {
+    if (context.accessTokenOf(email) == null) {
+      String token = api.signInForToken(email, ScenarioContext.PASSWORD);
+      context.rememberAccessToken(email, token);
+    }
+  }
+
   @Cuando("el administrador invita a {string} con el correo {string} y el rol {string}")
   public void theAdministratorInvites(String fullName, String email, String role) throws Exception {
     context.record(api.inviteUser(context.currentAdministratorToken(), fullName, email, role));
