@@ -76,4 +76,33 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
     expense.attachEvidence(command.imageUrl(), command.fileSizeBytes(), clock.instant());
     return expenseRepository.saveAndFlush(expense);
   }
+
+  @Override
+  @Transactional
+  public java.util.List<Expense> handleSync(java.util.List<RegisterExpenseCommand> commands) {
+    java.util.List<Expense> synchronizedExpenses = new java.util.ArrayList<>();
+    for (RegisterExpenseCommand cmd : commands) {
+      java.util.Optional<Expense> existing =
+          expenseRepository.findByIdempotencyKey(cmd.idempotencyKey());
+      if (existing.isPresent()) {
+        synchronizedExpenses.add(existing.get());
+      } else {
+        Expense expense =
+            Expense.create(
+                cmd.tenantId(),
+                cmd.tripId(),
+                cmd.driverId(),
+                cmd.category(),
+                cmd.amount(),
+                cmd.expenseDate(),
+                cmd.idempotencyKey(),
+                cmd.imageUrl(),
+                cmd.fileSizeBytes(),
+                clock.instant());
+        synchronizedExpenses.add(expenseRepository.save(expense));
+      }
+    }
+    expenseRepository.flush();
+    return synchronizedExpenses;
+  }
 }

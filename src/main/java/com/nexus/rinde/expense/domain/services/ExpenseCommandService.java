@@ -13,4 +13,6 @@ public interface ExpenseCommandService {
   Expense handle(UpdateExpenseStatusCommand command);
 
   Expense handle(AttachEvidenceCommand command);
+
+  java.util.List<Expense> handleSync(java.util.List<RegisterExpenseCommand> commands);
 }

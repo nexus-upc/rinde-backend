@@ -35,7 +35,7 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 - [x] POST /api/v1/trips/{tripId}/expenses (US21)
 - [x] POST /api/v1/expenses/evidences/presigned-url (US21)
-- [ ] POST /api/v1/expenses/sync (US22)
+- [x] POST /api/v1/expenses/sync (US22)
 - [x] GET /api/v1/trips/{tripId}/expenses (US23)
 - [x] PATCH /api/v1/expenses/{id}/status (US24)
 - [x] GET /api/v1/expenses/{id} (US17)

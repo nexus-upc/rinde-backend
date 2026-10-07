@@ -7,9 +7,12 @@ import com.nexus.rinde.expense.domain.model.queries.GetExpenseByIdQuery;
 import com.nexus.rinde.expense.domain.model.queries.GetExpensesByTripQuery;
 import com.nexus.rinde.expense.domain.services.ExpenseCommandService;
 import com.nexus.rinde.expense.domain.services.ExpenseQueryService;
+import com.nexus.rinde.expense.domain.model.valueobjects.Money;
 import com.nexus.rinde.expense.interfaces.rest.resources.ExpenseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.PresignedUrlResponseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.RegisterExpenseResource;
+import com.nexus.rinde.expense.interfaces.rest.resources.SyncExpenseItemResource;
+import com.nexus.rinde.expense.interfaces.rest.resources.SyncExpensesResponseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.UpdateExpenseStatusResource;
 import com.nexus.rinde.expense.interfaces.rest.transform.ExpenseResourceFromEntityAssembler;
 import com.nexus.rinde.expense.interfaces.rest.transform.RegisterExpenseCommandFromResourceAssembler;
@@ -195,5 +198,53 @@ public class ExpensesController {
         "https://storage.rinde.pe/evidences/upload/" + fileId + "?signature=sig-" + UUID.randomUUID();
     String fileUrl = "https://storage.rinde.pe/evidences/" + fileId + ".jpg";
     return ResponseEntity.ok(new PresignedUrlResponseResource(uploadUrl, fileUrl, 900));
+  }
+
+  @PostMapping("/api/v1/expenses/sync")
+  @PreAuthorize("isAuthenticated()")
+  @Operation(
+      summary = "Sincronizar lote de gastos registrados sin conexión (US22)",
+      description =
+          "Permite a la aplicación móvil enviar un lote de gastos capturados offline. El proceso"
+              + " es idempotente y garantiza consistencia eventual en la rendición.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Lote sincronizado exitosamente"),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Datos inválidos en el lote de gastos",
+        content =
+            @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)))
+  })
+  public ResponseEntity<SyncExpensesResponseResource> syncExpenses(
+      @RequestBody @Valid List<SyncExpenseItemResource> items) {
+    if (items == null || items.isEmpty()) {
+      return ResponseEntity.ok(new SyncExpensesResponseResource(0, 0, List.of()));
+    }
+    List<RegisterExpenseCommand> commands =
+        items.stream()
+            .map(
+                item ->
+                    new RegisterExpenseCommand(
+                        TenantContext.tenantId(),
+                        item.tripId(),
+                        TenantContext.userId(),
+                        item.category(),
+                        new Money(item.amount(), item.currency()),
+                        item.expenseDate(),
+                        item.idempotencyKey(),
+                        item.evidence() != null ? item.evidence().imageUrl() : null,
+                        item.evidence() != null ? item.evidence().fileSizeBytes() : null))
+            .toList();
+
+    List<Expense> synchronizedExpenses = expenseCommandService.handleSync(commands);
+    List<ExpenseResource> resources =
+        synchronizedExpenses.stream()
+            .map(ExpenseResourceFromEntityAssembler::toResource)
+            .toList();
+
+    return ResponseEntity.ok(
+        new SyncExpensesResponseResource(items.size(), resources.size(), resources));
   }
 }
