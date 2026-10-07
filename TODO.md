@@ -64,16 +64,16 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 ### Fleet & Maintenance (`fleet`)
 
-- [ ] GET /api/v1/vehicles (US12)
-- [ ] POST /api/v1/vehicles (US12)
-- [ ] GET /api/v1/vehicles/{id} (US32)
-- [ ] GET /api/v1/vehicles/{id}/health-status (US15, US34)
-- [ ] GET /api/v1/drivers (US13)
-- [ ] POST /api/v1/drivers (US13)
-- [ ] GET /api/v1/drivers/{id}/eligibility (US13, US15)
-- [ ] POST /api/v1/maintenances (US33)
-- [ ] GET /api/v1/maintenances/alerts (US34)
-- [ ] Migración y pruebas `.feature`
+- [x] GET /api/v1/vehicles (US12)
+- [x] POST /api/v1/vehicles (US12)
+- [x] GET /api/v1/vehicles/{id} (US32)
+- [x] GET /api/v1/vehicles/{id}/health-status (US15, US34)
+- [x] GET /api/v1/drivers (US13)
+- [x] POST /api/v1/drivers (US13)
+- [x] GET /api/v1/drivers/{id}/eligibility (US13, US15)
+- [x] POST /api/v1/maintenances (US33)
+- [x] GET /api/v1/maintenances/alerts (US34)
+- [x] Migración y pruebas `.feature`
 
 ### Incident Management (`incident`)
 
