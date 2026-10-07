@@ -82,6 +82,10 @@ public class ExpenseApi {
             .content("{}"));
   }
 
+  public ResultActions sync(String token, java.util.List<?> items) throws Exception {
+    return perform(post("/api/v1/expenses/sync"), token, items);
+  }
+
   private ResultActions perform(
       MockHttpServletRequestBuilder request, String token, Object body) throws Exception {
     return mockMvc.perform(

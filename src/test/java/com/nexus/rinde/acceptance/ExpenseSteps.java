@@ -263,4 +263,65 @@ public class ExpenseSteps {
     String token = context.accessTokenOf(driverEmail);
     context.record(api.updateStatus(token, expenseId, "APPROVED", null));
   }
+
+  @Cuando("el conductor sincroniza un lote con {int} gastos para el viaje {string}")
+  public void driverSyncsBatch(int count, String tripName) throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf("luis@andes.pe");
+    java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
+    for (int i = 1; i <= count; i++) {
+      java.util.Map<String, Object> item = new java.util.LinkedHashMap<>();
+      item.put("tripId", tripId);
+      item.put("category", "FOOD");
+      item.put("amount", new java.math.BigDecimal("25.00"));
+      item.put("currency", "PEN");
+      item.put("expenseDate", "2026-10-20");
+      item.put("idempotencyKey", "KEY-SYNC-" + i + "-" + System.nanoTime());
+      items.add(item);
+    }
+    context.record(api.sync(token, items));
+  }
+
+  @Cuando(
+      "el conductor sincroniza un lote que incluye el gasto con clave {string} y uno nuevo con"
+          + " clave {string} para el viaje {string}")
+  public void driverSyncsMixedBatch(String existingKey, String newKey, String tripName)
+      throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf("luis@andes.pe");
+    java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
+
+    java.util.Map<String, Object> item1 = new java.util.LinkedHashMap<>();
+    item1.put("tripId", tripId);
+    item1.put("category", "FUEL");
+    item1.put("amount", new java.math.BigDecimal("100.00"));
+    item1.put("currency", "PEN");
+    item1.put("expenseDate", "2026-10-20");
+    item1.put("idempotencyKey", existingKey);
+    items.add(item1);
+
+    java.util.Map<String, Object> item2 = new java.util.LinkedHashMap<>();
+    item2.put("tripId", tripId);
+    item2.put("category", "TOLL");
+    item2.put("amount", new java.math.BigDecimal("15.00"));
+    item2.put("currency", "PEN");
+    item2.put("expenseDate", "2026-10-20");
+    item2.put("idempotencyKey", newKey);
+    items.add(item2);
+
+    context.record(api.sync(token, items));
+  }
+
+  @Cuando("una persona sin token sincroniza un lote de gastos para el viaje {string}")
+  public void unauthenticatedSyncsBatch(String tripName) throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    java.util.Map<String, Object> item = new java.util.LinkedHashMap<>();
+    item.put("tripId", tripId);
+    item.put("category", "FUEL");
+    item.put("amount", new java.math.BigDecimal("50.00"));
+    item.put("currency", "PEN");
+    item.put("expenseDate", "2026-10-20");
+    item.put("idempotencyKey", "KEY-NOAUTH-SYNC");
+    context.record(api.sync(null, java.util.List.of(item)));
+  }
 }
