@@ -22,6 +22,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
   @EntityGraph(attributePaths = "evidence")
   List<Expense> findByTripIdAndStatus(UUID tripId, ExpenseStatus status);
 
+  List<Expense> findByTenantId(UUID tenantId);
+
   boolean existsByIdempotencyKey(String idempotencyKey);
 
   Optional<Expense> findByIdempotencyKey(String idempotencyKey);
