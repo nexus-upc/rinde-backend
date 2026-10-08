@@ -2,6 +2,7 @@ package com.nexus.rinde.iam.infrastructure.security;
 
 import com.nexus.rinde.shared.infrastructure.security.JwtAuthenticationFilter;
 import com.nexus.rinde.shared.infrastructure.security.JwtTokenReader;
+import com.nexus.rinde.shared.infrastructure.security.TenantStatusProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,7 +25,10 @@ public class SecurityConfiguration {
 
   @Bean
   public SecurityFilterChain securityFilterChain(
-      HttpSecurity http, JwtTokenReader tokenReader, ProblemDetailSecurityHandler errorHandler)
+      HttpSecurity http,
+      JwtTokenReader tokenReader,
+      TenantStatusProvider tenantStatusProvider,
+      ProblemDetailSecurityHandler errorHandler)
       throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
@@ -37,7 +41,8 @@ public class SecurityConfiguration {
                         "/api/v1/tenants/*/verification",
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/password-reset",
-                        "/api/v1/auth/password")
+                        "/api/v1/auth/password",
+                        "/api/v1/billing/webhooks/payment")
                     .permitAll()
                     .requestMatchers(
                         "/actuator/health/**",
@@ -51,7 +56,8 @@ public class SecurityConfiguration {
             handling ->
                 handling.authenticationEntryPoint(errorHandler).accessDeniedHandler(errorHandler))
         .addFilterBefore(
-            new JwtAuthenticationFilter(tokenReader), UsernamePasswordAuthenticationFilter.class);
+            new JwtAuthenticationFilter(tokenReader, tenantStatusProvider),
+            UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 

@@ -87,17 +87,25 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 ### Subscriptions & Billing (`subscription`)
 
-- [ ] GET /api/v1/plans (US38)
-- [ ] POST /api/v1/subscriptions (US38)
-- [ ] GET /api/v1/subscriptions/{id} (US40)
-- [ ] POST /api/v1/subscriptions/{id}/checkout (US39)
-- [ ] POST /api/v1/billing/webhooks/payment (US39)
-- [ ] Migración y pruebas `.feature`
+- [x] GET /api/v1/plans (US38)
+- [x] POST /api/v1/subscriptions (US38)
+- [x] GET /api/v1/subscriptions/{id} (US40)
+- [x] POST /api/v1/subscriptions/{id}/checkout (US39; checkout simulado sin datos de tarjeta)
+- [x] POST /api/v1/billing/webhooks/payment (US39; firma HMAC, rechazo, reintento, confirmación e idempotencia)
+- [x] Migraciones y escenarios `.feature` para US38, US39, US40 y US36
+- [x] Completar US40: aviso de renovación a cinco días, gracia de tres días, restricciones de altas y límite de Fleet con sugerencia de plan
+- [x] Ejecutar la suite de aceptación contra PostgreSQL 17.11 (120 escenarios y 1291 pasos aprobados; 0 fallos)
+- [x] Ejecutar la colección exportada con Postman CLI 1.70.0 en `rinde_test` (17 solicitudes y 30 aserciones aprobadas; comprobante simulado verificado y datos temporales limpiados)
+- [x] Ejecutar la colección local activa con Postman CLI 1.70.0 en `rinde_test` (19 solicitudes y 33 comprobaciones aprobadas; la suscripción, el pago confirmado y el comprobante quedaron persistidos)
+- [x] Ejecutar la colección local desde Postman Runner (19 solicitudes y 33 comprobaciones aprobadas; capturas guardadas fuera del repositorio)
 
 ### Notifications (`notification`)
 
 - [ ] Escuchar TenantRegistered, UserInvited y PasswordResetRequested (correos de IAM)
-- [ ] Escuchar TripAssigned, ExpenseObserved, MaintenanceDue, IncidentReported y SubscriptionExpiring (avisos)
+- [x] Escuchar `TripAssigned` y guardar un aviso idempotente pendiente en `notification.retry_store`
+- [ ] Configurar token/proveedor push y proceso de reintentos para entregar avisos de `TripAssigned`
+- [x] Escuchar `SubscriptionExpiring` y registrar el correo de renovación en la bandeja de salida simulada, de forma idempotente
+- [ ] Escuchar ExpenseObserved, MaintenanceDue e IncidentReported (avisos)
 
 ## Todo el equipo
 
