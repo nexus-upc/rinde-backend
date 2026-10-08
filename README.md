@@ -78,6 +78,18 @@ logging:
 
 ## Ejecutar
 
+El webhook de pago simulado requiere `RINDE_BILLING_SIMULATION_WEBHOOK_SECRET` con al menos 32 caracteres. En PowerShell puedes generar una clave aleatoria para la sesión y después iniciar la aplicación en esa misma terminal:
+
+```powershell
+$secretBytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($secretBytes)
+$env:RINDE_BILLING_SIMULATION_WEBHOOK_SECRET = [BitConverter]::ToString($secretBytes).Replace('-', '')
+$rng.Dispose()
+```
+
+Configura el mismo valor en el entorno de Postman que firme los webhooks. Mantén la clave en variables locales y no la guardes en `application.yml` ni en Git.
+
 ```
 mvnw.cmd spring-boot:run
 ```
