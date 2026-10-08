@@ -24,6 +24,7 @@ public class ScenarioContext {
   private final Map<String, String> vehicleIds = new HashMap<>();
   private final Map<String, String> driverIds = new HashMap<>();
   private final Map<String, String> expenseIds = new HashMap<>();
+  private final Map<String, String> settlementIds = new HashMap<>();
   private MvcResult lastResult;
   private String currentAdministratorToken;
 
@@ -43,6 +44,10 @@ public class ScenarioContext {
 
   public JsonNode body() throws Exception {
     return objectMapper.readTree(lastResult.getResponse().getContentAsString());
+  }
+
+  public String lastResponseBody() throws Exception {
+    return lastResult.getResponse().getContentAsString();
   }
 
   public void rememberAccessToken(String email, String token) {
@@ -99,6 +104,14 @@ public class ScenarioContext {
 
   public String expenseIdOf(String name) {
     return expenseIds.get(name);
+  }
+
+  public void rememberSettlementId(String name, String settlementId) {
+    settlementIds.put(name, settlementId);
+  }
+
+  public String settlementIdOf(String name) {
+    return settlementIds.get(name);
   }
 
   public String emailOfUserId(String userId) {
