@@ -93,8 +93,8 @@ public class Settlement extends AuditableAbstractAggregateRoot {
     this.advanceCurrency = (currency != null && !currency.isBlank()) ? currency.trim().toUpperCase() : "PEN";
   }
 
-  /** Cierra la liquidación sumando los gastos aprobados y calculando el balance. */
-  public void close(List<Expense> approvedExpenses, UUID closedBy, Instant now) {
+  /** Recalcula el total de gastos aprobados y el balance del anticipo. */
+  public void recalculate(List<Expense> approvedExpenses) {
     ensureOpen();
     BigDecimal total =
         approvedExpenses.stream()
@@ -106,6 +106,11 @@ public class Settlement extends AuditableAbstractAggregateRoot {
     this.expenseTotalCurrency = currency;
     this.advanceBalance =
         this.advanceAmount != null ? this.advanceAmount.subtract(total) : total.negate();
+  }
+
+  /** Cierra la liquidación sumando los gastos aprobados y publica SettlementClosed. */
+  public void close(List<Expense> approvedExpenses, UUID closedBy, Instant now) {
+    recalculate(approvedExpenses);
     this.status = SettlementStatus.CLOSED;
     this.closedBy = closedBy;
     this.closedAt = now != null ? now : Instant.now();
