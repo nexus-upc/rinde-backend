@@ -8,4 +8,8 @@ import java.util.UUID;
 public interface ExpenseContextFacade {
 
   List<Expense> findApprovedExpensesByTripId(UUID tripId);
+
+  List<Expense> findByTenantIdAndTripId(UUID tenantId, UUID tripId);
+
+  List<Expense> findByTenantId(UUID tenantId);
 }

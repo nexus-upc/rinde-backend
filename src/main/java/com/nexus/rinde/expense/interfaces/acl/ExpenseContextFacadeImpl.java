@@ -21,4 +21,14 @@ public class ExpenseContextFacadeImpl implements ExpenseContextFacade {
   public List<Expense> findApprovedExpensesByTripId(UUID tripId) {
     return expenseRepository.findByTripIdAndStatus(tripId, ExpenseStatus.APPROVED);
   }
+
+  @Override
+  public List<Expense> findByTenantIdAndTripId(UUID tenantId, UUID tripId) {
+    return expenseRepository.findByTenantIdAndTripId(tenantId, tripId);
+  }
+
+  @Override
+  public List<Expense> findByTenantId(UUID tenantId) {
+    return expenseRepository.findByTenantId(tenantId);
+  }
 }
