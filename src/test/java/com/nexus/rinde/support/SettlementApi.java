@@ -43,6 +43,24 @@ public class SettlementApi {
     return mockMvc.perform(authorized(get("/api/v1/trips/" + tripId + "/settlement"), token));
   }
 
+  public ResultActions recalculate(String token, String settlementId) throws Exception {
+    return mockMvc.perform(
+        authorized(post("/api/v1/settlements/" + settlementId + "/recalculation"), token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"));
+  }
+
+  public ResultActions close(String token, String settlementId) throws Exception {
+    return mockMvc.perform(
+        authorized(post("/api/v1/settlements/" + settlementId + "/close"), token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{}"));
+  }
+
+  public ResultActions export(String token, String settlementId) throws Exception {
+    return mockMvc.perform(authorized(get("/api/v1/settlements/" + settlementId + "/export"), token));
+  }
+
   private ResultActions perform(
       MockHttpServletRequestBuilder request, String token, Object body) throws Exception {
     return mockMvc.perform(

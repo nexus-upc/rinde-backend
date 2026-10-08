@@ -128,4 +128,82 @@ public class SettlementSteps {
     String expectedTripId = context.tripIdOf(tripName);
     assertThat(context.body().get(field).asText()).isEqualTo(expectedTripId);
   }
+
+  @Cuando("el administrador recalcula la liquidación {string}")
+  public void adminRecalculatesSettlement(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.currentAdministratorToken();
+    context.record(api.recalculate(token, settlementId));
+  }
+
+  @Cuando("el administrador recalcula una liquidación con id inexistente")
+  public void adminRecalculatesUnknown() throws Exception {
+    String token = context.currentAdministratorToken();
+    context.record(api.recalculate(token, UUID.randomUUID().toString()));
+  }
+
+  @Cuando("el conductor {string} intenta recalcular la liquidación {string}")
+  public void driverRecalculates(String email, String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.accessTokenOf(email);
+    context.record(api.recalculate(token, settlementId));
+  }
+
+  @io.cucumber.java.es.Dado("que el administrador cerró la liquidación {string}")
+  public void adminAlreadyClosedSettlement(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.currentAdministratorToken();
+    context.record(api.close(token, settlementId));
+  }
+
+  @Cuando("el administrador cierra la liquidación {string}")
+  public void adminClosesSettlement(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.currentAdministratorToken();
+    context.record(api.close(token, settlementId));
+  }
+
+  @Cuando("el administrador cierra una liquidación con id inexistente")
+  public void adminClosesUnknown() throws Exception {
+    String token = context.currentAdministratorToken();
+    context.record(api.close(token, UUID.randomUUID().toString()));
+  }
+
+  @Cuando("el conductor {string} intenta cerrar la liquidación {string}")
+  public void driverTriesToClose(String email, String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.accessTokenOf(email);
+    context.record(api.close(token, settlementId));
+  }
+
+  @Cuando("una persona sin token intenta cerrar la liquidación {string}")
+  public void unauthenticatedCloses(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    context.record(api.close(null, settlementId));
+  }
+
+  @Cuando("el administrador exporta la liquidación {string}")
+  public void adminExportsSettlement(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    String token = context.currentAdministratorToken();
+    context.record(api.export(token, settlementId));
+  }
+
+  @Cuando("el administrador exporta una liquidación con id inexistente")
+  public void adminExportsUnknown() throws Exception {
+    String token = context.currentAdministratorToken();
+    context.record(api.export(token, UUID.randomUUID().toString()));
+  }
+
+  @Cuando("una persona sin token exporta la liquidación {string}")
+  public void unauthenticatedExports(String settlementName) throws Exception {
+    String settlementId = context.settlementIdOf(settlementName);
+    context.record(api.export(null, settlementId));
+  }
+
+  @Y("la respuesta CSV contiene {string}")
+  public void csvContains(String expected) throws Exception {
+    String content = context.lastResponseBody();
+    assertThat(content).contains(expected);
+  }
 }

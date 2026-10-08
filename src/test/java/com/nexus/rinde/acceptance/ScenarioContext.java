@@ -46,6 +46,10 @@ public class ScenarioContext {
     return objectMapper.readTree(lastResult.getResponse().getContentAsString());
   }
 
+  public String lastResponseBody() throws Exception {
+    return lastResult.getResponse().getContentAsString();
+  }
+
   public void rememberAccessToken(String email, String token) {
     accessTokens.put(email, token);
   }
