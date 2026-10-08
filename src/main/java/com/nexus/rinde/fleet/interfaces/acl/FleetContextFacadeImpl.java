@@ -55,4 +55,9 @@ public class FleetContextFacadeImpl implements FleetContextFacade {
         .findByTenantIdAndUserId(tenantId, userId)
         .map(Driver::getId);
   }
+
+  @Override
+  public long countVehiclesByTenantId(UUID tenantId) {
+    return vehicleQueryService.countByTenantId(tenantId);
+  }
 }

@@ -41,6 +41,11 @@ public class VehicleQueryServiceImpl implements VehicleQueryService {
   }
 
   @Override
+  public long countByTenantId(java.util.UUID tenantId) {
+    return vehicleRepository.countByTenantId(tenantId);
+  }
+
+  @Override
   public VehicleHealthStatus handle(GetVehicleHealthStatusQuery query) {
     Vehicle vehicle =
         vehicleRepository

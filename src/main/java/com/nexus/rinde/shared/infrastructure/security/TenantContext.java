@@ -1,6 +1,7 @@
 package com.nexus.rinde.shared.infrastructure.security;
 
 import com.nexus.rinde.shared.domain.exceptions.AuthenticationFailedException;
+import com.nexus.rinde.shared.domain.exceptions.ForbiddenOperationException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,5 +47,13 @@ public final class TenantContext {
 
   public static String tenantStatus() {
     return require().tenantStatus();
+  }
+
+  /** Rechaza la creación de operaciones cuando IAM restringió a la empresa por suscripción. */
+  public static void requireUnrestrictedTenant() {
+    if ("RESTRICTED".equals(tenantStatus())) {
+      throw new ForbiddenOperationException(
+          "La suscripción está vencida. Regularice el pago para programar viajes o registrar unidades.");
+    }
   }
 }

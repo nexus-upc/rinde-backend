@@ -101,6 +101,7 @@ public class VehiclesController {
   })
   public ResponseEntity<VehicleResource> create(
       @Valid @RequestBody CreateVehicleResource resource) {
+    TenantContext.requireUnrestrictedTenant();
     RegisterVehicleCommand command =
         VehicleCommandAssembler.toCommand(TenantContext.tenantId(), resource);
     Vehicle vehicle = vehicleCommandService.handle(command);

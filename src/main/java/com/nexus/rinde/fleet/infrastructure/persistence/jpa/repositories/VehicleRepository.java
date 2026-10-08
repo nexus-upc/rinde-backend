@@ -15,6 +15,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, UUID> {
 
   List<Vehicle> findByTenantId(UUID tenantId);
 
+  long countByTenantId(UUID tenantId);
+
   boolean existsByTenantIdAndPlateNumber(UUID tenantId, String plateNumber);
 
   Optional<Vehicle> findByTenantIdAndPlateNumber(UUID tenantId, String plateNumber);

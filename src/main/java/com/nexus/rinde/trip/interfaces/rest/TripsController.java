@@ -89,6 +89,7 @@ public class TripsController {
   })
   public ResponseEntity<TripDetailResource> schedule(
       @Valid @RequestBody ScheduleTripResource resource) {
+    TenantContext.requireUnrestrictedTenant();
     ScheduleTripCommand command =
         ScheduleTripCommandFromResourceAssembler.toCommand(
             TenantContext.tenantId(), TenantContext.userId(), resource);

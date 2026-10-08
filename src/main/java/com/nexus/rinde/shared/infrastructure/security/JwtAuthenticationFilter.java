@@ -22,9 +22,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private static final String BEARER_PREFIX = "Bearer ";
 
   private final JwtTokenReader tokenReader;
+  private final TenantStatusProvider tenantStatusProvider;
 
-  public JwtAuthenticationFilter(JwtTokenReader tokenReader) {
+  public JwtAuthenticationFilter(
+      JwtTokenReader tokenReader, TenantStatusProvider tenantStatusProvider) {
     this.tokenReader = tokenReader;
+    this.tenantStatusProvider = tenantStatusProvider;
   }
 
   @Override
@@ -34,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     try {
       resolveToken(request)
           .flatMap(tokenReader::read)
+          .map(this::refreshTenantStatus)
           .ifPresent(
               user -> {
                 TenantContext.set(user);
@@ -48,6 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     } finally {
       TenantContext.clear();
     }
+  }
+
+  private CurrentUser refreshTenantStatus(CurrentUser user) {
+    String status =
+        tenantStatusProvider.findTenantStatus(user.tenantId()).orElse(user.tenantStatus());
+    return new CurrentUser(user.userId(), user.tenantId(), user.role(), status, user.email());
   }
 
   private Optional<String> resolveToken(HttpServletRequest request) {

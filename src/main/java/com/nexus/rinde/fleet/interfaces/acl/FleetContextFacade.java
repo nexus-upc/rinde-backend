@@ -16,4 +16,7 @@ public interface FleetContextFacade {
   Optional<DriverEligibility> checkDriverEligibility(UUID tenantId, UUID driverId);
 
   Optional<UUID> findDriverIdByUserId(UUID tenantId, UUID userId);
+
+  /** Número de unidades registradas en la empresa indicada. */
+  long countVehiclesByTenantId(UUID tenantId);
 }

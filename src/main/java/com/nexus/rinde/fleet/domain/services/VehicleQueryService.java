@@ -15,5 +15,7 @@ public interface VehicleQueryService {
 
   List<Vehicle> handle(ListVehiclesQuery query);
 
+  long countByTenantId(java.util.UUID tenantId);
+
   VehicleHealthStatus handle(GetVehicleHealthStatusQuery query);
 }
