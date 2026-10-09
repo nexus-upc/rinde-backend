@@ -52,7 +52,7 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
   @Override
   @Transactional
   public Expense handle(RegisterExpenseCommand command) {
-    if (expenseRepository.existsByIdempotencyKey(command.idempotencyKey())) {
+    if (expenseRepository.existsByIdempotencyKey(normalize(command.idempotencyKey()))) {
       throw new ConflictException(DUPLICATE_KEY_MESSAGE);
     }
 
@@ -128,7 +128,7 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
       return itemTransaction.execute(status -> saveSyncItem(cmd));
     } catch (DataIntegrityViolationException ex) {
       // Otra empresa insertó la misma clave entre la comprobación y el guardado.
-      if (expenseRepository.existsByIdempotencyKey(cmd.idempotencyKey())) {
+      if (expenseRepository.existsByIdempotencyKey(normalize(cmd.idempotencyKey()))) {
         return ItemOutcome.rejected(
             cmd.idempotencyKey(), SyncRejectionCode.DUPLICATE_KEY, DUPLICATE_KEY_MESSAGE);
       }
@@ -138,11 +138,11 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
 
   private ItemOutcome saveSyncItem(RegisterExpenseCommand cmd) {
     Optional<Expense> existing =
-        expenseRepository.findByTenantIdAndIdempotencyKey(cmd.tenantId(), cmd.idempotencyKey());
+        expenseRepository.findByTenantIdAndIdempotencyKey(cmd.tenantId(), normalize(cmd.idempotencyKey()));
     if (existing.isPresent()) {
       return ItemOutcome.synchronizedWith(existing.get());
     }
-    if (expenseRepository.existsByIdempotencyKey(cmd.idempotencyKey())) {
+    if (expenseRepository.existsByIdempotencyKey(normalize(cmd.idempotencyKey()))) {
       return ItemOutcome.rejected(
           cmd.idempotencyKey(), SyncRejectionCode.DUPLICATE_KEY, DUPLICATE_KEY_MESSAGE);
     }
@@ -171,6 +171,11 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
       return ItemOutcome.rejected(
           cmd.idempotencyKey(), SyncRejectionCode.INVALID_EXPENSE, ex.getMessage());
     }
+  }
+
+  /** Busca la clave igual que se guarda (sin espacios alrededor) para reconocer un reenvío. */
+  private static String normalize(String idempotencyKey) {
+    return idempotencyKey == null ? null : idempotencyKey.trim();
   }
 
   /** Permite gastos en viajes iniciados o finalizados (estos últimos llegan por sincronización). */
