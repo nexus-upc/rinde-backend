@@ -52,3 +52,24 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
     Cuando el conductor "pablo@andes.pe" intenta iniciar el viaje "viaje"
     Entonces la respuesta tiene código 404
     Y el mensaje de error es "El viaje no existe."
+
+  Escenario: La unidad pasa a IN_TRIP en Fleet cuando el conductor inicia el viaje
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
+    Dado que el conductor "luis@andes.pe" inició sesión
+    Cuando el conductor "luis@andes.pe" inicia el viaje "viaje"
+    Entonces la respuesta tiene código 200
+    Cuando el administrador consulta el vehículo "camión"
+    Entonces la respuesta tiene código 200
+    Y el vehículo queda con el estado "IN_TRIP"
+
+  Escenario: La unidad vuelve a AVAILABLE en Fleet cuando el conductor finaliza el viaje
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
+    Dado que el conductor "luis@andes.pe" inició sesión
+    Y que el conductor "luis@andes.pe" inicia el viaje "viaje"
+    Cuando el conductor "luis@andes.pe" finaliza el viaje "viaje"
+    Entonces la respuesta tiene código 200
+    Cuando el administrador consulta el vehículo "camión"
+    Entonces la respuesta tiene código 200
+    Y el vehículo queda con el estado "AVAILABLE"

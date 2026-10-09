@@ -55,6 +55,11 @@ public class Vehicle extends AuditableAbstractAggregateRoot {
   @Column(name = "status", nullable = false, length = 20)
   private VehicleStatus status;
 
+  /** Último estado de mantenimiento anunciado; vacío mientras la unidad esté al día. */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "last_announced_maintenance_state", length = 20)
+  private MaintenanceState lastAnnouncedMaintenanceState;
+
   protected Vehicle() {}
 
   public Vehicle(
@@ -106,12 +111,42 @@ public class Vehicle extends AuditableAbstractAggregateRoot {
     this.status = VehicleStatus.AVAILABLE;
   }
 
+  /** Pasa la unidad a viaje solo si está disponible; en otro estado no cambia. */
+  public void startTrip() {
+    if (this.status == VehicleStatus.AVAILABLE) {
+      this.status = VehicleStatus.IN_TRIP;
+    }
+  }
+
+  /** Devuelve la unidad a disponible solo si estaba en viaje; una unidad en taller no cambia. */
+  public void finishTrip() {
+    if (this.status == VehicleStatus.IN_TRIP) {
+      this.status = VehicleStatus.AVAILABLE;
+    }
+  }
+
   public void sendToMaintenance() {
     this.status = VehicleStatus.IN_MAINTENANCE;
   }
 
   public void finishMaintenance() {
     this.status = VehicleStatus.AVAILABLE;
+  }
+
+  /**
+   * Registra un estado de mantenimiento vencido o próximo. Devuelve true solo si es nuevo y debe
+   * anunciarse; al volver a estar al día se borra la marca para anunciar otra vez después.
+   */
+  public boolean announceMaintenanceState(MaintenanceState state) {
+    if (state == MaintenanceState.UP_TO_DATE) {
+      this.lastAnnouncedMaintenanceState = null;
+      return false;
+    }
+    if (state == this.lastAnnouncedMaintenanceState) {
+      return false;
+    }
+    this.lastAnnouncedMaintenanceState = state;
+    return true;
   }
 
   public VehicleHealthStatus evaluateHealth(LocalDate today, List<Maintenance> maintenances) {
