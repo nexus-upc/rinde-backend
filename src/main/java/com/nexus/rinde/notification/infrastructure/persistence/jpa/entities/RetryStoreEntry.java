@@ -99,7 +99,7 @@ public class RetryStoreEntry {
 
   /** La primera falla no es un reintento; cada reintento fallido suma uno a retryCount. */
   public void markFailed(String error, boolean retry, RetryPolicy policy, Instant now) {
-    this.lastError = error;
+    this.lastError = shorten(error);
     this.updatedAt = now;
     if (retry) {
       this.retryCount++;
@@ -195,5 +195,10 @@ public class RetryStoreEntry {
 
   public Instant getDeliveredAt() {
     return deliveredAt;
+  }
+
+  /** Recorta el error al tamaño de la columna para que guardarlo nunca falle. */
+  private static String shorten(String error) {
+    return error != null && error.length() > 500 ? error.substring(0, 500) : error;
   }
 }

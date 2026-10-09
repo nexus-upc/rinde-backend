@@ -83,7 +83,7 @@ public class EmailOutboxEntry {
   /** Tras el primer intento fallido quedan cinco reintentos; agotados, el correo pasa a FAILED. */
   public void markFailed(String error, RetryPolicy policy, Instant now) {
     deliveryAttempts++;
-    lastError = error;
+    lastError = shorten(error);
     Optional<Duration> wait = policy.waitBeforeNextRetry(deliveryAttempts - 1);
     if (wait.isPresent()) {
       deliveryStatus = PENDING;
@@ -141,5 +141,10 @@ public class EmailOutboxEntry {
 
   public Instant getDeliveredAt() {
     return deliveredAt;
+  }
+
+  /** Recorta el error al tamaño de la columna para que guardarlo nunca falle. */
+  private static String shorten(String error) {
+    return error != null && error.length() > 500 ? error.substring(0, 500) : error;
   }
 }
