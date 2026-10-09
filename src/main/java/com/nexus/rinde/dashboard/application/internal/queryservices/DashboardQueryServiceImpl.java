@@ -11,12 +11,9 @@ import com.nexus.rinde.dashboard.interfaces.rest.resources.OperationalMetricsRes
 import com.nexus.rinde.dashboard.interfaces.rest.resources.TripSummaryResource;
 import com.nexus.rinde.expense.interfaces.acl.ExpenseContextFacade;
 import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
-import com.nexus.rinde.fleet.domain.model.aggregates.Driver;
-import com.nexus.rinde.fleet.domain.model.aggregates.Vehicle;
-import com.nexus.rinde.fleet.domain.model.valueobjects.DriverStatus;
-import com.nexus.rinde.fleet.domain.model.valueobjects.VehicleStatus;
-import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.DriverRepository;
-import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.VehicleRepository;
+import com.nexus.rinde.fleet.interfaces.acl.FleetContextFacade;
+import com.nexus.rinde.fleet.interfaces.acl.FleetDriverSummary;
+import com.nexus.rinde.fleet.interfaces.acl.FleetVehicleSummary;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementSummary;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementContextFacade;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
@@ -35,20 +32,17 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   private final TripContextFacade tripFacade;
   private final SettlementContextFacade settlementFacade;
   private final ExpenseContextFacade expenseFacade;
-  private final VehicleRepository vehicleRepository;
-  private final DriverRepository driverRepository;
+  private final FleetContextFacade fleetFacade;
 
   public DashboardQueryServiceImpl(
       TripContextFacade tripFacade,
       SettlementContextFacade settlementFacade,
       ExpenseContextFacade expenseFacade,
-      VehicleRepository vehicleRepository,
-      DriverRepository driverRepository) {
+      FleetContextFacade fleetFacade) {
     this.tripFacade = tripFacade;
     this.settlementFacade = settlementFacade;
     this.expenseFacade = expenseFacade;
-    this.vehicleRepository = vehicleRepository;
-    this.driverRepository = driverRepository;
+    this.fleetFacade = fleetFacade;
   }
 
   @Override
@@ -104,26 +98,27 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   public FleetStatusResource handle(GetFleetStatusQuery query) {
     UUID tenantId = query.tenantId();
 
-    List<Vehicle> vehicles = vehicleRepository.findByTenantId(tenantId);
-    List<Driver> drivers = driverRepository.findByTenantId(tenantId);
+    List<FleetVehicleSummary> vehicles = fleetFacade.findVehiclesByTenantId(tenantId);
+    List<FleetDriverSummary> drivers = fleetFacade.findDriversByTenantId(tenantId);
 
-    int available = (int) vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.AVAILABLE).count();
-    int inTrip = (int) vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.IN_TRIP).count();
-    int inMaintenance = (int) vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.IN_MAINTENANCE).count();
+    int available = (int) vehicles.stream().filter(v -> "AVAILABLE".equals(v.status())).count();
+    int inTrip = (int) vehicles.stream().filter(v -> "IN_TRIP".equals(v.status())).count();
+    int inMaintenance =
+        (int) vehicles.stream().filter(v -> "IN_MAINTENANCE".equals(v.status())).count();
 
-    int enabled = (int) drivers.stream().filter(d -> d.getStatus() == DriverStatus.ENABLED).count();
-    int disabled = (int) drivers.stream().filter(d -> d.getStatus() == DriverStatus.DISABLED).count();
+    int enabled = (int) drivers.stream().filter(d -> "ENABLED".equals(d.status())).count();
+    int disabled = (int) drivers.stream().filter(d -> "DISABLED".equals(d.status())).count();
 
     List<VehicleSummary> vehicleSummaries =
         vehicles.stream()
             .map(
                 v ->
                     new VehicleSummary(
-                        v.getId().toString(),
-                        v.getPlateNumber(),
-                        v.getBrand(),
-                        v.getModel(),
-                        v.getStatus().name()))
+                        v.id().toString(),
+                        v.plateNumber(),
+                        v.brand(),
+                        v.model(),
+                        v.status()))
             .toList();
 
     List<DriverSummary> driverSummaries =
@@ -131,11 +126,11 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
             .map(
                 d ->
                     new DriverSummary(
-                        d.getId().toString(),
-                        d.getFullName(),
-                        d.getLicenseNumber(),
-                        d.getLicenseCategory(),
-                        d.getStatus().name()))
+                        d.id().toString(),
+                        d.fullName(),
+                        d.licenseNumber(),
+                        d.licenseCategory(),
+                        d.status()))
             .toList();
 
     return new FleetStatusResource(
