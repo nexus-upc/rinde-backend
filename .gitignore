@@ -21,9 +21,6 @@ Thumbs.db
 *.log
 logs/
 
-# Configuración local de cada integrante
-src/main/resources/application.yml
-
 # Variables de entorno locales (secretos)
 .env
 
