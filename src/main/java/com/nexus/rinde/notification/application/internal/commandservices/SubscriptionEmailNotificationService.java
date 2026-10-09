@@ -2,6 +2,7 @@ package com.nexus.rinde.notification.application.internal.commandservices;
 
 import com.nexus.rinde.iam.interfaces.acl.IamContextFacade;
 import com.nexus.rinde.notification.domain.model.valueobjects.EmailMessage;
+import com.nexus.rinde.notification.domain.model.valueobjects.RetryPolicy;
 import com.nexus.rinde.notification.domain.services.EmailAdapter;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.entities.EmailOutboxEntry;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.repositories.EmailOutboxRepository;
@@ -25,16 +26,19 @@ public class SubscriptionEmailNotificationService {
   private final IamContextFacade iamContextFacade;
   private final EmailOutboxRepository emailOutboxRepository;
   private final EmailAdapter emailAdapter;
+  private final RetryPolicy retryPolicy;
   private final Clock clock;
 
   public SubscriptionEmailNotificationService(
       IamContextFacade iamContextFacade,
       EmailOutboxRepository emailOutboxRepository,
       EmailAdapter emailAdapter,
+      RetryPolicy retryPolicy,
       Clock clock) {
     this.iamContextFacade = iamContextFacade;
     this.emailOutboxRepository = emailOutboxRepository;
     this.emailAdapter = emailAdapter;
+    this.retryPolicy = retryPolicy;
     this.clock = clock;
   }
 
@@ -81,7 +85,8 @@ public class SubscriptionEmailNotificationService {
       emailAdapter.send(message);
       entry.markSimulatedSent(clock.instant());
     } catch (RuntimeException ex) {
-      entry.markPending(ex.getMessage() == null ? "Falló la entrega del correo." : ex.getMessage());
+      String detail = ex.getMessage() == null ? "Falló la entrega del correo." : ex.getMessage();
+      entry.markFailed(detail, retryPolicy, clock.instant());
       log.warn("El correo simulado quedó pendiente para el evento {}.", eventId, ex);
     }
     emailOutboxRepository.saveAndFlush(entry);
