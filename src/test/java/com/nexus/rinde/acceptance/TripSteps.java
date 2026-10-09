@@ -52,6 +52,17 @@ public class TripSteps {
     context.rememberVehicleId(name, UUID.randomUUID().toString());
   }
 
+  @Dado("que el vehículo {string} no está registrado en Fleet")
+  public void aVehicleIsNotRegisteredInFleet(String name) {
+    fleet.useRealAdapter(true);
+    context.rememberVehicleId(name, UUID.randomUUID().toString());
+  }
+
+  @Dado("que la asignación consulta a Fleet sin usar el doble de prueba")
+  public void assignmentQueriesFleetDirectly() {
+    fleet.useRealAdapter(true);
+  }
+
   @Dado("que la liquidación del viaje {string} de la empresa con RUC {string} fue cerrada")
   public void theSettlementWasClosed(String name, String ruc) {
     publisher.publishEvent(
@@ -83,6 +94,8 @@ public class TripSteps {
     fleet.setDriverEnabled(false);
   }
 
+  @Dado(
+      "que el administrador programa el viaje {string} de {string} a {string} con carga {string} y salida {string}")
   @Cuando(
       "el administrador programa el viaje {string} de {string} a {string} con carga {string} y salida {string}")
   public void theAdministratorSchedulesTrip(
@@ -159,6 +172,7 @@ public class TripSteps {
             false));
   }
 
+  @Dado("que el administrador asigna el viaje {string} al vehículo {string} y al conductor {string}")
   @Cuando("el administrador asigna el viaje {string} al vehículo {string} y al conductor {string}")
   public void theAdministratorAssigns(String tripName, String vehicle, String driverEmail)
       throws Exception {
@@ -172,6 +186,20 @@ public class TripSteps {
       String tripName, String vehicle, String driverEmail) throws Exception {
     assign(
         context.currentAdministratorToken(), tripName, vehicle, driverEmail, true);
+  }
+
+  /** Asigna usando los ids que devuelve Fleet, sin pasar por el doble de prueba. */
+  @Dado("que el administrador asigna el viaje {string} con el vehículo de Fleet {string} y el conductor de Fleet {string}")
+  @Cuando("el administrador asigna el viaje {string} con el vehículo de Fleet {string} y el conductor de Fleet {string}")
+  public void theAdministratorAssignsWithFleetIds(
+      String tripName, String vehicleName, String driverName) throws Exception {
+    context.record(
+        api.assign(
+            context.currentAdministratorToken(),
+            context.tripIdOf(tripName),
+            context.vehicleIdOf(vehicleName),
+            context.driverIdOf(driverName),
+            false));
   }
 
   @Cuando("el conductor {string} intenta asignar el viaje {string}")
@@ -230,9 +258,15 @@ public class TripSteps {
     context.record(api.assignedToMe(context.currentAdministratorToken()));
   }
 
+  @Dado("que el conductor {string} inicia el viaje {string}")
   @Cuando("el conductor {string} inicia el viaje {string}")
   public void theDriverStartsTrip(String email, String tripName) throws Exception {
     context.record(api.start(context.accessTokenOf(email), context.tripIdOf(tripName)));
+  }
+
+  @Dado("que el conductor inicia el viaje {string}")
+  public void theDriverStartsTripDefault(String tripName) throws Exception {
+    theDriverStartsTrip("luis@andes.pe", tripName);
   }
 
   @Cuando("el conductor {string} intenta iniciar el viaje {string}")
@@ -240,6 +274,7 @@ public class TripSteps {
     context.record(api.start(context.accessTokenOf(email), context.tripIdOf(tripName)));
   }
 
+  @Dado("que el conductor {string} finaliza el viaje {string}")
   @Cuando("el conductor {string} finaliza el viaje {string}")
   public void theDriverFinishesTrip(String email, String tripName) throws Exception {
     context.record(api.finish(context.accessTokenOf(email), context.tripIdOf(tripName)));
@@ -287,6 +322,15 @@ public class TripSteps {
   @Y("la lista contiene {int} viajes")
   public void theTripListHasSize(int expected) throws Exception {
     assertThat(context.body().size()).isEqualTo(expected);
+  }
+
+  @Y("la lista incluye el viaje {string}")
+  public void theTripListIncludesTrip(String tripName) throws Exception {
+    List<String> ids =
+        StreamSupport.stream(context.body().spliterator(), false)
+            .map(trip -> trip.get("id").asText())
+            .toList();
+    assertThat(ids).contains(context.tripIdOf(tripName));
   }
 
   @Y("la lista está vacía")

@@ -1,6 +1,7 @@
 package com.nexus.rinde.support;
 
 import com.nexus.rinde.iam.interfaces.acl.IamContextFacade;
+import com.nexus.rinde.trip.application.internal.outboundservices.acl.FleetAvailabilityAclService;
 import com.nexus.rinde.trip.domain.model.valueobjects.Availability;
 import com.nexus.rinde.trip.domain.model.valueobjects.MaintenanceState;
 import com.nexus.rinde.trip.domain.services.FleetAvailabilityService;
@@ -11,20 +12,30 @@ import java.util.UUID;
 public class TestFleetAvailabilityService implements FleetAvailabilityService {
 
   private final IamContextFacade iamContextFacade;
+  private final FleetAvailabilityAclService realAdapter;
   private volatile MaintenanceState maintenanceState = MaintenanceState.UP_TO_DATE;
   private volatile boolean driverEnabled = true;
+  private volatile boolean useRealAdapter = false;
 
-  public TestFleetAvailabilityService(IamContextFacade iamContextFacade) {
+  public TestFleetAvailabilityService(
+      IamContextFacade iamContextFacade, FleetAvailabilityAclService realAdapter) {
     this.iamContextFacade = iamContextFacade;
+    this.realAdapter = realAdapter;
   }
 
   @Override
   public Availability check(UUID tenantId, UUID vehicleId, UUID driverId) {
+    if (useRealAdapter) {
+      return realAdapter.check(tenantId, vehicleId, driverId);
+    }
     return new Availability(maintenanceState, driverEnabled);
   }
 
   @Override
   public Optional<UUID> findDriverIdByUser(UUID tenantId, UUID userId) {
+    if (useRealAdapter) {
+      return realAdapter.findDriverIdByUser(tenantId, userId);
+    }
     return iamContextFacade.isActiveUserWithRole(tenantId, userId, "DRIVER")
         ? Optional.of(userId)
         : Optional.empty();
@@ -33,6 +44,12 @@ public class TestFleetAvailabilityService implements FleetAvailabilityService {
   public void reset() {
     maintenanceState = MaintenanceState.UP_TO_DATE;
     driverEnabled = true;
+    useRealAdapter = false;
+  }
+
+  /** Si es verdadero, la disponibilidad y la búsqueda de conductor usan el adaptador real contra Fleet. */
+  public void useRealAdapter(boolean enabled) {
+    useRealAdapter = enabled;
   }
 
   public void setMaintenanceState(MaintenanceState state) {

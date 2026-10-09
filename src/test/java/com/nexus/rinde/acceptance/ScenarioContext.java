@@ -22,6 +22,11 @@ public class ScenarioContext {
   private final Map<String, String> userIds = new HashMap<>();
   private final Map<String, String> tripIds = new HashMap<>();
   private final Map<String, String> vehicleIds = new HashMap<>();
+  private final Map<String, String> driverIds = new HashMap<>();
+  private final Map<String, String> expenseIds = new HashMap<>();
+  private final Map<String, String> settlementIds = new HashMap<>();
+  private final Map<String, String> planIds = new HashMap<>();
+  private final Map<String, String> subscriptionIds = new HashMap<>();
   private MvcResult lastResult;
   private String currentAdministratorToken;
 
@@ -41,6 +46,10 @@ public class ScenarioContext {
 
   public JsonNode body() throws Exception {
     return objectMapper.readTree(lastResult.getResponse().getContentAsString());
+  }
+
+  public String lastResponseBody() throws Exception {
+    return lastResult.getResponse().getContentAsString();
   }
 
   public void rememberAccessToken(String email, String token) {
@@ -81,6 +90,54 @@ public class ScenarioContext {
 
   public String vehicleIdOf(String name) {
     return vehicleIds.get(name);
+  }
+
+  public void rememberDriverId(String name, String driverId) {
+    driverIds.put(name, driverId);
+  }
+
+  public String driverIdOf(String name) {
+    return driverIds.get(name);
+  }
+
+  public void rememberExpenseId(String name, String expenseId) {
+    expenseIds.put(name, expenseId);
+  }
+
+  public String expenseIdOf(String name) {
+    return expenseIds.get(name);
+  }
+
+  public void rememberSettlementId(String name, String settlementId) {
+    settlementIds.put(name, settlementId);
+  }
+
+  public String settlementIdOf(String name) {
+    return settlementIds.get(name);
+  }
+
+  public void rememberPlanId(String name, String planId) {
+    planIds.put(name, planId);
+  }
+
+  public String planIdOf(String name) {
+    return planIds.get(name);
+  }
+
+  public void rememberSubscriptionId(String name, String subscriptionId) {
+    subscriptionIds.put(name, subscriptionId);
+  }
+
+  public String subscriptionIdOf(String name) {
+    return subscriptionIds.get(name);
+  }
+
+  public void rememberLatestSubscriptionId(String subscriptionId) {
+    rememberSubscriptionId("última", subscriptionId);
+  }
+
+  public String latestSubscriptionId() {
+    return subscriptionIdOf("última");
   }
 
   public String emailOfUserId(String userId) {

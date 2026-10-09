@@ -1,0 +1,69 @@
+# Los secretos y los datos de conexión se leen del archivo .env en la raíz del proyecto.
+# Copia .env.example como .env y completa sus valores.
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: rinde
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rinde}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
+  # Cada bounded context declara su propio Flyway (esquema y migraciones propios).
+  flyway:
+    enabled: false
+
+server:
+  port: 8080
+
+rinde:
+  security:
+    jwt:
+      # Mínimo 32 caracteres.
+      secret: ${JWT_SECRET}
+      expiration-hours: 8
+  billing:
+    simulation:
+      webhook-secret: ${RINDE_BILLING_SIMULATION_WEBHOOK_SECRET}
+  iam:
+    tokens:
+      invitation-validity-hours: 48
+      password-reset-validity-hours: 1
+      email-verification-validity-hours: 48
+  fleet:
+    maintenance-alerts:
+      # Cron de la revisión de mantenimientos próximos o vencidos (todos los días a las 6:00).
+      cron: "0 0 6 * * *"
+  notification:
+    retry:
+      # Esperas en minutos antes de cada reintento; tras la quinta falla el aviso queda FAILED.
+      delays-minutes: [1, 2, 4, 8, 16]
+      # Cada cuánto se revisan los avisos vencidos, en milisegundos.
+      poll-delay-ms: 30000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"
