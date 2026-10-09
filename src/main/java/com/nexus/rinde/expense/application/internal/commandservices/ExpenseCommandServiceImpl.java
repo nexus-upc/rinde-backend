@@ -6,10 +6,12 @@ import com.nexus.rinde.expense.domain.model.commands.RegisterExpenseCommand;
 import com.nexus.rinde.expense.domain.model.commands.UpdateExpenseStatusCommand;
 import com.nexus.rinde.expense.domain.model.valueobjects.ExpenseStatus;
 import com.nexus.rinde.expense.domain.services.ExpenseCommandService;
+import com.nexus.rinde.expense.domain.services.TripStatusService;
 import com.nexus.rinde.expense.infrastructure.persistence.jpa.repositories.ExpenseRepository;
 import com.nexus.rinde.shared.domain.exceptions.ConflictException;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
 import java.time.Clock;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpenseCommandServiceImpl implements ExpenseCommandService {
 
   private final ExpenseRepository expenseRepository;
+  private final TripStatusService tripStatusService;
   private final Clock clock;
 
-  public ExpenseCommandServiceImpl(ExpenseRepository expenseRepository, Clock clock) {
+  public ExpenseCommandServiceImpl(
+      ExpenseRepository expenseRepository, TripStatusService tripStatusService, Clock clock) {
     this.expenseRepository = expenseRepository;
+    this.tripStatusService = tripStatusService;
     this.clock = clock;
   }
 
@@ -31,6 +36,8 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
     if (expenseRepository.existsByIdempotencyKey(command.idempotencyKey())) {
       throw new ConflictException("La clave de idempotencia ya fue utilizada.");
     }
+
+    requireTripAcceptingExpenses(command.tenantId(), command.tripId());
 
     Expense expense =
         Expense.create(
@@ -87,6 +94,7 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
       if (existing.isPresent()) {
         synchronizedExpenses.add(existing.get());
       } else {
+        requireTripAcceptingExpenses(cmd.tenantId(), cmd.tripId());
         Expense expense =
             Expense.create(
                 cmd.tenantId(),
@@ -104,5 +112,20 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
     }
     expenseRepository.flush();
     return synchronizedExpenses;
+  }
+
+  /** Permite gastos en viajes iniciados o finalizados (estos últimos llegan por sincronización). */
+  private void requireTripAcceptingExpenses(UUID tenantId, UUID tripId) {
+    String status =
+        tripStatusService
+            .findTripStatus(tenantId, tripId)
+            .orElseThrow(() -> new ResourceNotFoundException("El viaje no existe."));
+
+    if ("SETTLED".equals(status)) {
+      throw new ConflictException("El viaje ya fue liquidado.");
+    }
+    if (!"IN_ROUTE".equals(status) && !"FINISHED".equals(status)) {
+      throw new ConflictException("El viaje todavía no ha iniciado.");
+    }
   }
 }

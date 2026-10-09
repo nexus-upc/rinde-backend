@@ -237,6 +237,27 @@ public class ExpenseSteps {
     context.rememberExpenseId(expenseName, context.body().get("id").asText());
   }
 
+  @Cuando(
+      "el conductor {string} intenta registrar un gasto de tipo {string} por el monto {string}"
+          + " con clave {string} en el viaje {string}")
+  public void namedDriverAttemptsExpense(
+      String email, String category, String amount, String idempotencyKey, String tripName)
+      throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf(email);
+    context.record(
+        api.register(
+            token,
+            tripId,
+            category,
+            new BigDecimal(amount),
+            "PEN",
+            LocalDate.parse("2026-10-20"),
+            idempotencyKey,
+            null,
+            null));
+  }
+
   @Dado("que el administrador {string} aprobó el gasto {string}")
   public void namedAdministratorApprovesExpense(String email, String expenseName) throws Exception {
     String expenseId = context.expenseIdOf(expenseName);
