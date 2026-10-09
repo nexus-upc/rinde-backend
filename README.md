@@ -20,75 +20,11 @@ CREATE DATABASE rinde_test;
 
 ## Configuración
 
-`src/main/resources/application.yml` no se sube al repositorio. Créalo con este contenido y completa tu usuario, tu contraseña y un secreto de al menos 32 caracteres:
-
-```yaml
-spring:
-  application:
-    name: rinde
-  datasource:
-    url: jdbc:postgresql://localhost:5432/rinde
-    username: TU_USUARIO
-    password: TU_CONTRASENA
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
-        type:
-          preferred_instant_jdbc_type: TIMESTAMP
-  # Cada bounded context declara su propio Flyway (esquema y migraciones propios).
-  flyway:
-    enabled: false
-
-server:
-  port: 8080
-
-rinde:
-  security:
-    jwt:
-      secret: UN_SECRETO_DE_AL_MENOS_32_CARACTERES
-      expiration-hours: 8
-  iam:
-    tokens:
-      invitation-validity-hours: 48
-      password-reset-validity-hours: 1
-      email-verification-validity-hours: 48
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-
-logging:
-  pattern:
-    level: "%5p [%X{correlationId:-}]"
-```
+Los datos de conexión y los secretos se leen del archivo `.env` en la raíz del proyecto, que no se sube al repositorio. Copia `.env.example` como `.env` y completa los valores.
 
 ## Ejecutar
 
-El webhook de pago simulado requiere `RINDE_BILLING_SIMULATION_WEBHOOK_SECRET` con al menos 32 caracteres. En PowerShell puedes generar una clave aleatoria para la sesión y después iniciar la aplicación en esa misma terminal:
-
-```powershell
-$secretBytes = New-Object byte[] 32
-$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-$rng.GetBytes($secretBytes)
-$env:RINDE_BILLING_SIMULATION_WEBHOOK_SECRET = [BitConverter]::ToString($secretBytes).Replace('-', '')
-$rng.Dispose()
-```
-
-Configura el mismo valor en el entorno de Postman que firme los webhooks. Mantén la clave en variables locales y no la guardes en `application.yml` ni en Git.
+El webhook de pago simulado usa la variable `RINDE_BILLING_SIMULATION_WEBHOOK_SECRET`, definida en el `.env`. Configura el mismo valor en el entorno de Postman que firme los webhooks.
 
 ```
 mvnw.cmd spring-boot:run
