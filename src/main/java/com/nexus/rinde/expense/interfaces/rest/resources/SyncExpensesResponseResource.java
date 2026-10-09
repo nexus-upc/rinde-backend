@@ -8,7 +8,14 @@ import java.util.List;
 public record SyncExpensesResponseResource(
     @Schema(description = "Total de gastos recibidos en la solicitud", example = "3")
         int totalReceived,
-    @Schema(description = "Total de gastos sincronizados exitosamente", example = "3")
+    @Schema(
+            description =
+                "Total de gastos guardados en esta solicitud o ya guardados antes con la misma clave",
+            example = "2")
         int synchronizedCount,
-    @Schema(description = "Detalle de los gastos sincronizados")
-        List<ExpenseResource> items) {}
+    @Schema(description = "Detalle de los gastos sincronizados o ya existentes")
+        List<ExpenseResource> items,
+    @Schema(description = "Total de gastos rechazados en la solicitud", example = "1")
+        int rejectedCount,
+    @Schema(description = "Detalle de los gastos rechazados, uno por cada ítem no guardado")
+        List<SyncRejectedItemResource> rejected) {}

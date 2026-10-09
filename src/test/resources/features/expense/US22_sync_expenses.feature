@@ -28,10 +28,15 @@ Característica: US22 Sincronizar gastos registrados sin conexión (Offline Sync
     Y la respuesta incluye el campo "totalReceived" con el valor "2"
     Y la respuesta incluye el campo "synchronizedCount" con el valor "2"
 
-  Escenario: Lote con un gasto de un viaje que no existe se rechaza completo
+  Escenario: Lote con un gasto de un viaje que no existe guarda solo el gasto válido
     Cuando el conductor sincroniza un lote con un gasto para el viaje "viaje" y otro para un viaje que no existe
-    Entonces la respuesta tiene código 404
-    Y el mensaje de error es "El viaje no existe."
+    Entonces la respuesta tiene código 200
+    Y la respuesta incluye el campo "synchronizedCount" con el valor "1"
+    Y la respuesta incluye el campo "rejectedCount" con el valor "1"
+    Y el elemento 0 de rechazados tiene el campo "code" con el valor "TRIP_NOT_FOUND"
+    Y el elemento 0 de rechazados tiene el campo "reason" con el valor "El viaje no existe."
+    Cuando el conductor consulta los gastos del viaje "viaje"
+    Entonces la lista de gastos contiene 1 elementos
 
   Escenario: Sincronizar sin autenticación es rechazado
     Cuando una persona sin token sincroniza un lote de gastos para el viaje "viaje"

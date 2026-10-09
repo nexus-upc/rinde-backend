@@ -8,11 +8,13 @@ import com.nexus.rinde.expense.domain.model.queries.GetExpensesByTripQuery;
 import com.nexus.rinde.expense.domain.services.ExpenseCommandService;
 import com.nexus.rinde.expense.domain.services.ExpenseQueryService;
 import com.nexus.rinde.expense.domain.model.valueobjects.Money;
+import com.nexus.rinde.expense.domain.model.valueobjects.SyncExpensesResult;
 import com.nexus.rinde.expense.interfaces.rest.resources.ExpenseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.PresignedUrlResponseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.RegisterExpenseResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.SyncExpenseItemResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.SyncExpensesResponseResource;
+import com.nexus.rinde.expense.interfaces.rest.resources.SyncRejectedItemResource;
 import com.nexus.rinde.expense.interfaces.rest.resources.UpdateExpenseStatusResource;
 import com.nexus.rinde.expense.interfaces.rest.transform.ExpenseResourceFromEntityAssembler;
 import com.nexus.rinde.expense.interfaces.rest.transform.RegisterExpenseCommandFromResourceAssembler;
@@ -208,7 +210,11 @@ public class ExpensesController {
           "Permite a la aplicación móvil enviar un lote de gastos capturados offline. El proceso"
               + " es idempotente y garantiza consistencia eventual en la rendición.")
   @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Lote sincronizado exitosamente"),
+    @ApiResponse(
+        responseCode = "200",
+        description =
+            "Lote procesado. Los gastos rechazados por reglas de negocio van en rejected y no"
+                + " impiden guardar los demás"),
     @ApiResponse(
         responseCode = "400",
         description = "Datos inválidos en el lote de gastos",
@@ -220,7 +226,7 @@ public class ExpensesController {
   public ResponseEntity<SyncExpensesResponseResource> syncExpenses(
       @RequestBody @Valid List<SyncExpenseItemResource> items) {
     if (items == null || items.isEmpty()) {
-      return ResponseEntity.ok(new SyncExpensesResponseResource(0, 0, List.of()));
+      return ResponseEntity.ok(new SyncExpensesResponseResource(0, 0, List.of(), 0, List.of()));
     }
     List<RegisterExpenseCommand> commands =
         items.stream()
@@ -238,13 +244,21 @@ public class ExpensesController {
                         item.evidence() != null ? item.evidence().fileSizeBytes() : null))
             .toList();
 
-    List<Expense> synchronizedExpenses = expenseCommandService.handleSync(commands);
+    SyncExpensesResult result = expenseCommandService.handleSync(commands);
     List<ExpenseResource> resources =
-        synchronizedExpenses.stream()
+        result.synchronizedExpenses().stream()
             .map(ExpenseResourceFromEntityAssembler::toResource)
+            .toList();
+    List<SyncRejectedItemResource> rejected =
+        result.rejected().stream()
+            .map(
+                item ->
+                    new SyncRejectedItemResource(
+                        item.idempotencyKey(), item.reason(), item.code().name()))
             .toList();
 
     return ResponseEntity.ok(
-        new SyncExpensesResponseResource(items.size(), resources.size(), resources));
+        new SyncExpensesResponseResource(
+            items.size(), resources.size(), resources, rejected.size(), rejected));
   }
 }

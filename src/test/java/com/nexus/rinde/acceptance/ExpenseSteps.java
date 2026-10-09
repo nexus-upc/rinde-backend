@@ -324,6 +324,11 @@ public class ExpenseSteps {
     assertThat(context.body().size()).isEqualTo(expected);
   }
 
+  @Y("el elemento {int} de rechazados tiene el campo {string} con el valor {string}")
+  public void rejectedItemHasField(int index, String field, String expected) throws Exception {
+    assertThat(context.body().get("rejected").get(index).get(field).asText()).isEqualTo(expected);
+  }
+
   @Cuando("el conductor consulta el detalle del gasto {string}")
   public void driverQueriesExpenseDetail(String expenseName) throws Exception {
     String expenseId = context.expenseIdOf(expenseName);

@@ -4,6 +4,7 @@ import com.nexus.rinde.expense.domain.model.aggregates.Expense;
 import com.nexus.rinde.expense.domain.model.commands.AttachEvidenceCommand;
 import com.nexus.rinde.expense.domain.model.commands.RegisterExpenseCommand;
 import com.nexus.rinde.expense.domain.model.commands.UpdateExpenseStatusCommand;
+import com.nexus.rinde.expense.domain.model.valueobjects.SyncExpensesResult;
 
 /** Contrato de casos de uso de modificación de gastos. */
 public interface ExpenseCommandService {
@@ -14,5 +15,5 @@ public interface ExpenseCommandService {
 
   Expense handle(AttachEvidenceCommand command);
 
-  java.util.List<Expense> handleSync(java.util.List<RegisterExpenseCommand> commands);
+  SyncExpensesResult handleSync(java.util.List<RegisterExpenseCommand> commands);
 }
