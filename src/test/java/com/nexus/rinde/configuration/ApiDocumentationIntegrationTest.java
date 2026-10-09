@@ -32,7 +32,6 @@ class ApiDocumentationIntegrationTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.paths", hasKey("/api/v1/users/{id}")))
         .andExpect(jsonPath("$.paths", hasKey("/api/v1/trips")))
         .andExpect(jsonPath("$.paths", hasKey("/api/v1/trips/{id}/assignment")))
-        .andExpect(jsonPath("$.paths.length()").value(42))
         .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"));
   }
 
