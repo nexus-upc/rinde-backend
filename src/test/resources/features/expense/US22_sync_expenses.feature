@@ -38,6 +38,43 @@ Característica: US22 Sincronizar gastos registrados sin conexión (Offline Sync
     Cuando el conductor consulta los gastos del viaje "viaje"
     Entonces la lista de gastos contiene 1 elementos
 
+  Escenario: Lote en el que todos los gastos son inválidos responde 200 con todos rechazados
+    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "2026-10-25"
+    Cuando el conductor sincroniza un lote con un gasto para el viaje "programado" y otro para el viaje "inexistente"
+    Entonces la respuesta tiene código 200
+    Y la respuesta incluye el campo "synchronizedCount" con el valor "0"
+    Y la respuesta incluye el campo "rejectedCount" con el valor "2"
+    Y el elemento 0 de rechazados tiene el campo "code" con el valor "TRIP_NOT_STARTED"
+    Y el elemento 1 de rechazados tiene el campo "code" con el valor "TRIP_NOT_FOUND"
+
+  Escenario: Reenviar el mismo lote devuelve los mismos gastos sin duplicarlos
+    Cuando el conductor sincroniza el lote con las claves "KEY-REP-1" y "KEY-REP-2" para el viaje "viaje"
+    Entonces la respuesta tiene código 200
+    Cuando el conductor sincroniza el lote con las claves "KEY-REP-1" y "KEY-REP-2" para el viaje "viaje"
+    Entonces la respuesta tiene código 200
+    Y la respuesta incluye el campo "synchronizedCount" con el valor "2"
+    Y la respuesta incluye el campo "rejectedCount" con el valor "0"
+    Cuando el conductor consulta los gastos del viaje "viaje"
+    Entonces la lista de gastos contiene 2 elementos
+
+  Escenario: Clave de idempotencia usada por otra empresa se rechaza sin revelar su gasto
+    Dado que existe una empresa verificada con RUC "20456789012" y administrador "beto@beta.pe"
+    Y que el administrador "beto@beta.pe" inició sesión
+    Y que el administrador invitó a "Marta Ruiz" con el correo "marta@beta.pe" y el rol "DRIVER"
+    Y que "marta@beta.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
+    Y que existe el vehículo "camión beta"
+    Y que el administrador programa el viaje "viaje ajeno" de "Lima" a "Trujillo" con carga "Papel" y salida "2026-10-20"
+    Y que el administrador asigna el viaje "viaje ajeno" al vehículo "camión beta" y al conductor "marta@beta.pe"
+    Y que el conductor "marta@beta.pe" inició sesión
+    Y que el conductor "marta@beta.pe" inicia el viaje "viaje ajeno"
+    Y que el conductor "marta@beta.pe" registró el gasto "gasto ajeno" de tipo "FUEL" por el monto "300.00" con clave "KEY-AJENA-01" en el viaje "viaje ajeno"
+    Cuando el conductor sincroniza el lote con las claves "KEY-AJENA-01" y "KEY-PROPIA-01" para el viaje "viaje"
+    Entonces la respuesta tiene código 200
+    Y la respuesta incluye el campo "synchronizedCount" con el valor "1"
+    Y el elemento 0 de rechazados tiene el campo "code" con el valor "DUPLICATE_KEY"
+    Y el elemento 0 de rechazados tiene el campo "reason" con el valor "La clave de idempotencia ya fue utilizada."
+    Y la respuesta no incluye el gasto "gasto ajeno"
+
   Escenario: Sincronizar sin autenticación es rechazado
     Cuando una persona sin token sincroniza un lote de gastos para el viaje "viaje"
     Entonces la respuesta tiene código 401

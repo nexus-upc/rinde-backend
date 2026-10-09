@@ -292,6 +292,41 @@ public class ExpenseSteps {
     context.record(api.sync(token, items));
   }
 
+  @Cuando(
+      "el conductor sincroniza un lote con un gasto para el viaje {string} y otro para el viaje"
+          + " {string}")
+  public void driverSyncsBatchWithTwoInvalidTrips(String firstTrip, String secondTrip)
+      throws Exception {
+    String token = context.accessTokenOf("luis@andes.pe");
+    java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
+    items.add(syncItem(tripIdOrRandom(firstTrip), "KEY-TODOS-INVALIDOS-1-" + System.nanoTime()));
+    items.add(syncItem(tripIdOrRandom(secondTrip), "KEY-TODOS-INVALIDOS-2-" + System.nanoTime()));
+    context.record(api.sync(token, items));
+  }
+
+  @Cuando(
+      "el conductor sincroniza el lote con las claves {string} y {string} para el viaje {string}")
+  public void driverSyncsBatchWithKeys(String firstKey, String secondKey, String tripName)
+      throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf("luis@andes.pe");
+    java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
+    items.add(syncItem(tripId, firstKey));
+    items.add(syncItem(tripId, secondKey));
+    context.record(api.sync(token, items));
+  }
+
+  @Y("la respuesta no incluye el gasto {string}")
+  public void responseDoesNotIncludeExpense(String expenseName) throws Exception {
+    assertThat(context.lastResponseBody()).doesNotContain(context.expenseIdOf(expenseName));
+  }
+
+  /** Un viaje no existente se identifica con un UUID aleatorio. */
+  private String tripIdOrRandom(String tripName) {
+    String tripId = context.tripIdOf(tripName);
+    return tripId != null ? tripId : java.util.UUID.randomUUID().toString();
+  }
+
   private static java.util.Map<String, Object> syncItem(String tripId, String idempotencyKey) {
     java.util.Map<String, Object> item = new java.util.LinkedHashMap<>();
     item.put("tripId", tripId);
