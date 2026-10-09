@@ -45,3 +45,29 @@ Característica: US21 Registrar un gasto con su evidencia desde el móvil
   Escenario: Registrar gasto requiere autenticación
     Cuando una persona sin token registra un gasto en el viaje "viaje"
     Entonces la respuesta tiene código 401
+
+  Escenario: Rechazar gasto en un viaje que no existe
+    Cuando el conductor intenta registrar un gasto de tipo "FUEL" por el monto "40.00" en un viaje que no existe
+    Entonces la respuesta tiene código 404
+    Y el mensaje de error es "El viaje no existe."
+
+  Escenario: Rechazar gasto en un viaje de otra empresa
+    Dado que existe una empresa verificada con RUC "20456789012" y administrador "beto@beta.pe"
+    Y que el administrador "beto@beta.pe" inició sesión
+    Y que el administrador invitó a "Marta Ruiz" con el correo "marta@beta.pe" y el rol "DRIVER"
+    Y que "marta@beta.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
+    Cuando el conductor "marta@beta.pe" intenta registrar un gasto de tipo "FUEL" por el monto "70.00" con clave "KEY-AJENO-2026" en el viaje "viaje"
+    Entonces la respuesta tiene código 404
+    Y el mensaje de error es "El viaje no existe."
+
+  Escenario: Rechazar gasto en un viaje que todavía no ha iniciado
+    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "2026-10-25"
+    Cuando el conductor registra un gasto de tipo "FOOD" por el monto "20.00" en fecha "2026-10-20" sin evidencia y clave "KEY-EXP-PROGRAMADO" en el viaje "programado"
+    Entonces la respuesta tiene código 409
+    Y el mensaje de error es "El viaje todavía no ha iniciado."
+
+  Escenario: Registrar gasto en un viaje ya finalizado
+    Dado que el conductor "luis@andes.pe" finaliza el viaje "viaje"
+    Cuando el conductor registra un gasto de tipo "TOLL" por el monto "12.00" en fecha "2026-10-20" sin evidencia y clave "KEY-EXP-FINALIZADO" en el viaje "viaje"
+    Entonces la respuesta tiene código 201
+    Y la respuesta incluye el campo "status" con el valor "PENDING_SUPPORT"

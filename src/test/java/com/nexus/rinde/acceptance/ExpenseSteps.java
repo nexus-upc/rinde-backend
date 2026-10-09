@@ -237,6 +237,72 @@ public class ExpenseSteps {
     context.rememberExpenseId(expenseName, context.body().get("id").asText());
   }
 
+  @Cuando(
+      "el conductor {string} intenta registrar un gasto de tipo {string} por el monto {string}"
+          + " con clave {string} en el viaje {string}")
+  public void namedDriverAttemptsExpense(
+      String email, String category, String amount, String idempotencyKey, String tripName)
+      throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf(email);
+    context.record(
+        api.register(
+            token,
+            tripId,
+            category,
+            new BigDecimal(amount),
+            "PEN",
+            LocalDate.parse("2026-10-20"),
+            idempotencyKey,
+            null,
+            null));
+  }
+
+  @Cuando(
+      "el conductor intenta registrar un gasto de tipo {string} por el monto {string} en un viaje"
+          + " que no existe")
+  public void driverAttemptsExpenseOnUnknownTrip(String category, String amount)
+      throws Exception {
+    String token = context.accessTokenOf("luis@andes.pe");
+    context.record(
+        api.register(
+            token,
+            java.util.UUID.randomUUID().toString(),
+            category,
+            new BigDecimal(amount),
+            "PEN",
+            LocalDate.parse("2026-10-20"),
+            "KEY-UNKNOWN-" + System.nanoTime(),
+            null,
+            null));
+  }
+
+  @Cuando(
+      "el conductor sincroniza un lote con un gasto para el viaje {string} y otro para un viaje que"
+          + " no existe")
+  public void driverSyncsBatchWithUnknownTrip(String tripName) throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf("luis@andes.pe");
+    java.util.List<java.util.Map<String, Object>> items = new java.util.ArrayList<>();
+    items.add(syncItem(tripId, "KEY-SYNC-VALIDO-" + System.nanoTime()));
+    items.add(
+        syncItem(
+            java.util.UUID.randomUUID().toString(),
+            "KEY-SYNC-INEXISTENTE-" + System.nanoTime()));
+    context.record(api.sync(token, items));
+  }
+
+  private static java.util.Map<String, Object> syncItem(String tripId, String idempotencyKey) {
+    java.util.Map<String, Object> item = new java.util.LinkedHashMap<>();
+    item.put("tripId", tripId);
+    item.put("category", "FOOD");
+    item.put("amount", new java.math.BigDecimal("25.00"));
+    item.put("currency", "PEN");
+    item.put("expenseDate", "2026-10-20");
+    item.put("idempotencyKey", idempotencyKey);
+    return item;
+  }
+
   @Dado("que el administrador {string} aprobó el gasto {string}")
   public void namedAdministratorApprovesExpense(String email, String expenseName) throws Exception {
     String expenseId = context.expenseIdOf(expenseName);
