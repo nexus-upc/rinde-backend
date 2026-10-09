@@ -1,17 +1,8 @@
 package com.nexus.rinde.notification.application.internal.commandservices;
 
-import com.nexus.rinde.iam.interfaces.acl.IamContextFacade;
-import com.nexus.rinde.notification.domain.model.valueobjects.EmailMessage;
-import com.nexus.rinde.notification.domain.model.valueobjects.RetryPolicy;
-import com.nexus.rinde.notification.domain.services.EmailAdapter;
-import com.nexus.rinde.notification.infrastructure.persistence.jpa.entities.EmailOutboxEntry;
-import com.nexus.rinde.notification.infrastructure.persistence.jpa.repositories.EmailOutboxRepository;
 import com.nexus.rinde.subscription.interfaces.acl.PaymentReceiptRequested;
 import com.nexus.rinde.subscription.interfaces.acl.SubscriptionExpiring;
-import java.time.Clock;
 import java.time.format.DateTimeFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,32 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SubscriptionEmailNotificationService {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(SubscriptionEmailNotificationService.class);
+  private final AdministratorEmailOutbox emailOutbox;
 
-  private final IamContextFacade iamContextFacade;
-  private final EmailOutboxRepository emailOutboxRepository;
-  private final EmailAdapter emailAdapter;
-  private final RetryPolicy retryPolicy;
-  private final Clock clock;
-
-  public SubscriptionEmailNotificationService(
-      IamContextFacade iamContextFacade,
-      EmailOutboxRepository emailOutboxRepository,
-      EmailAdapter emailAdapter,
-      RetryPolicy retryPolicy,
-      Clock clock) {
-    this.iamContextFacade = iamContextFacade;
-    this.emailOutboxRepository = emailOutboxRepository;
-    this.emailAdapter = emailAdapter;
-    this.retryPolicy = retryPolicy;
-    this.clock = clock;
+  public SubscriptionEmailNotificationService(AdministratorEmailOutbox emailOutbox) {
+    this.emailOutbox = emailOutbox;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void handle(SubscriptionExpiring event) {
     String expiry = DateTimeFormatter.ISO_INSTANT.format(event.expiresAt());
-    sendOnce(
+    emailOutbox.queueOnce(
         event.eventId(),
         event.tenantId(),
         "Tu suscripción vence pronto",
@@ -64,31 +39,7 @@ public class SubscriptionEmailNotificationService {
             + " a "
             + DateTimeFormatter.ISO_INSTANT.format(event.expiresAt())
             + ". RINDE no recibió ni almacenó datos de tarjeta.";
-    sendOnce(
+    emailOutbox.queueOnce(
         event.eventId(), event.tenantId(), "Comprobante de suscripción RINDE", body);
-  }
-
-  private void sendOnce(
-      java.util.UUID eventId, java.util.UUID tenantId, String subject, String body) {
-    if (emailOutboxRepository.existsById(eventId)) {
-      return;
-    }
-    var recipient = iamContextFacade.findAdministratorEmail(tenantId);
-    if (recipient.isEmpty()) {
-      log.warn("No se pudo resolver el correo del administrador para la empresa {}.", tenantId);
-      return;
-    }
-    EmailMessage message = new EmailMessage(eventId, tenantId, recipient.get(), subject, body);
-    EmailOutboxEntry entry =
-        emailOutboxRepository.saveAndFlush(EmailOutboxEntry.pending(message, clock.instant()));
-    try {
-      emailAdapter.send(message);
-      entry.markSimulatedSent(clock.instant());
-    } catch (RuntimeException ex) {
-      String detail = ex.getMessage() == null ? "Falló la entrega del correo." : ex.getMessage();
-      entry.markFailed(detail, retryPolicy, clock.instant());
-      log.warn("El correo simulado quedó pendiente para el evento {}.", eventId, ex);
-    }
-    emailOutboxRepository.saveAndFlush(entry);
   }
 }
