@@ -33,6 +33,9 @@ public class TestFleetAvailabilityService implements FleetAvailabilityService {
 
   @Override
   public Optional<UUID> findDriverIdByUser(UUID tenantId, UUID userId) {
+    if (useRealAdapter) {
+      return realAdapter.findDriverIdByUser(tenantId, userId);
+    }
     return iamContextFacade.isActiveUserWithRole(tenantId, userId, "DRIVER")
         ? Optional.of(userId)
         : Optional.empty();
@@ -44,7 +47,7 @@ public class TestFleetAvailabilityService implements FleetAvailabilityService {
     useRealAdapter = false;
   }
 
-  /** Si es verdadero, la consulta de disponibilidad usa el adaptador real contra Fleet. */
+  /** Si es verdadero, la disponibilidad y la búsqueda de conductor usan el adaptador real contra Fleet. */
   public void useRealAdapter(boolean enabled) {
     useRealAdapter = enabled;
   }
