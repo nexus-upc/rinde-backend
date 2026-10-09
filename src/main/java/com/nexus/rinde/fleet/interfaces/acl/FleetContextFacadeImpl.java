@@ -3,8 +3,6 @@ package com.nexus.rinde.fleet.interfaces.acl;
 import com.nexus.rinde.fleet.domain.model.aggregates.Driver;
 import com.nexus.rinde.fleet.domain.model.queries.CheckDriverEligibilityQuery;
 import com.nexus.rinde.fleet.domain.model.queries.GetVehicleHealthStatusQuery;
-import com.nexus.rinde.fleet.domain.model.valueobjects.DriverEligibility;
-import com.nexus.rinde.fleet.domain.model.valueobjects.VehicleHealthStatus;
 import com.nexus.rinde.fleet.domain.services.DriverQueryService;
 import com.nexus.rinde.fleet.domain.services.VehicleQueryService;
 import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.DriverRepository;
@@ -30,20 +28,28 @@ public class FleetContextFacadeImpl implements FleetContextFacade {
   }
 
   @Override
-  public Optional<VehicleHealthStatus> findVehicleHealthStatus(UUID tenantId, UUID vehicleId) {
+  public Optional<VehicleHealthSummary> findVehicleHealthStatus(UUID tenantId, UUID vehicleId) {
     try {
+      var status =
+          vehicleQueryService.handle(new GetVehicleHealthStatusQuery(tenantId, vehicleId));
       return Optional.of(
-          vehicleQueryService.handle(new GetVehicleHealthStatusQuery(tenantId, vehicleId)));
+          new VehicleHealthSummary(
+              status.vehicleId(),
+              status.maintenanceState().name(),
+              status.availableForTrip()));
     } catch (Exception e) {
       return Optional.empty();
     }
   }
 
   @Override
-  public Optional<DriverEligibility> checkDriverEligibility(UUID tenantId, UUID driverId) {
+  public Optional<DriverEligibilitySummary> checkDriverEligibility(UUID tenantId, UUID driverId) {
     try {
+      var eligibility =
+          driverQueryService.handle(new CheckDriverEligibilityQuery(tenantId, driverId));
       return Optional.of(
-          driverQueryService.handle(new CheckDriverEligibilityQuery(tenantId, driverId)));
+          new DriverEligibilitySummary(
+              eligibility.driverId(), eligibility.eligible(), eligibility.reason()));
     } catch (Exception e) {
       return Optional.empty();
     }

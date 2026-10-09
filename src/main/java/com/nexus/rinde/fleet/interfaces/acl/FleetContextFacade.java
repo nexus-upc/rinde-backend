@@ -1,7 +1,5 @@
 package com.nexus.rinde.fleet.interfaces.acl;
 
-import com.nexus.rinde.fleet.domain.model.valueobjects.DriverEligibility;
-import com.nexus.rinde.fleet.domain.model.valueobjects.VehicleHealthStatus;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,9 +9,9 @@ import java.util.UUID;
  */
 public interface FleetContextFacade {
 
-  Optional<VehicleHealthStatus> findVehicleHealthStatus(UUID tenantId, UUID vehicleId);
+  Optional<VehicleHealthSummary> findVehicleHealthStatus(UUID tenantId, UUID vehicleId);
 
-  Optional<DriverEligibility> checkDriverEligibility(UUID tenantId, UUID driverId);
+  Optional<DriverEligibilitySummary> checkDriverEligibility(UUID tenantId, UUID driverId);
 
   Optional<UUID> findDriverIdByUserId(UUID tenantId, UUID userId);
 

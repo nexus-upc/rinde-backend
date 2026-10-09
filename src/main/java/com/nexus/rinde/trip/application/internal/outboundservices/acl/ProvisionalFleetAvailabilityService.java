@@ -1,8 +1,8 @@
 package com.nexus.rinde.trip.application.internal.outboundservices.acl;
 
-import com.nexus.rinde.fleet.domain.model.valueobjects.DriverEligibility;
-import com.nexus.rinde.fleet.domain.model.valueobjects.VehicleHealthStatus;
+import com.nexus.rinde.fleet.interfaces.acl.DriverEligibilitySummary;
 import com.nexus.rinde.fleet.interfaces.acl.FleetContextFacade;
+import com.nexus.rinde.fleet.interfaces.acl.VehicleHealthSummary;
 import com.nexus.rinde.iam.interfaces.acl.IamContextFacade;
 import com.nexus.rinde.trip.domain.model.valueobjects.Availability;
 import com.nexus.rinde.trip.domain.model.valueobjects.MaintenanceState;
@@ -29,16 +29,16 @@ public class ProvisionalFleetAvailabilityService implements FleetAvailabilitySer
 
   @Override
   public Availability check(UUID tenantId, UUID vehicleId, UUID driverId) {
-    Optional<VehicleHealthStatus> health =
+    Optional<VehicleHealthSummary> health =
         fleetContextFacade.findVehicleHealthStatus(tenantId, vehicleId);
-    Optional<DriverEligibility> eligibility =
+    Optional<DriverEligibilitySummary> eligibility =
         fleetContextFacade.checkDriverEligibility(tenantId, driverId);
 
     if (health.isPresent() && eligibility.isPresent()) {
       MaintenanceState state =
           switch (health.get().maintenanceState()) {
-            case OVERDUE -> MaintenanceState.OVERDUE;
-            case DUE_SOON -> MaintenanceState.DUE_SOON;
+            case "OVERDUE" -> MaintenanceState.OVERDUE;
+            case "DUE_SOON" -> MaintenanceState.DUE_SOON;
             default -> MaintenanceState.UP_TO_DATE;
           };
       return new Availability(state, eligibility.get().eligible());
