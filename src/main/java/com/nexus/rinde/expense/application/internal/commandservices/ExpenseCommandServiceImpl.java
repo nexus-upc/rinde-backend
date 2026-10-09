@@ -90,10 +90,13 @@ public class ExpenseCommandServiceImpl implements ExpenseCommandService {
     java.util.List<Expense> synchronizedExpenses = new java.util.ArrayList<>();
     for (RegisterExpenseCommand cmd : commands) {
       java.util.Optional<Expense> existing =
-          expenseRepository.findByIdempotencyKey(cmd.idempotencyKey());
+          expenseRepository.findByTenantIdAndIdempotencyKey(cmd.tenantId(), cmd.idempotencyKey());
       if (existing.isPresent()) {
         synchronizedExpenses.add(existing.get());
       } else {
+        if (expenseRepository.existsByIdempotencyKey(cmd.idempotencyKey())) {
+          throw new ConflictException("La clave de idempotencia ya fue utilizada.");
+        }
         requireTripAcceptingExpenses(cmd.tenantId(), cmd.tripId());
         Expense expense =
             Expense.create(

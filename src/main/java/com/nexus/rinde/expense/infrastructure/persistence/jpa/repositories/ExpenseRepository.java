@@ -25,5 +25,5 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
 
   boolean existsByIdempotencyKey(String idempotencyKey);
 
-  Optional<Expense> findByIdempotencyKey(String idempotencyKey);
+  Optional<Expense> findByTenantIdAndIdempotencyKey(UUID tenantId, String idempotencyKey);
 }
