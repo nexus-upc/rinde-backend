@@ -24,6 +24,9 @@ logs/
 # Configuración local de cada integrante
 src/main/resources/application.yml
 
+# Variables de entorno locales (secretos)
+.env
+
 # Pruebas locales
 src/test/java/com/nexus/rinde/*
 !src/test/java/com/nexus/rinde/acceptance/
