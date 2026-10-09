@@ -77,6 +77,21 @@ Característica: US15 Asignar vehículo y conductor
     Cuando el conductor "luis@andes.pe" intenta asignar el viaje "viaje"
     Entonces la respuesta tiene código 403
 
+  Escenario: Rechazar un vehículo que no existe en Fleet
+    Dado que el vehículo "fantasma" no está registrado en Fleet
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y el administrador asigna el viaje "viaje" al vehículo "fantasma" y al conductor "luis@andes.pe"
+    Entonces la respuesta tiene código 404
+    Y el mensaje de error es "El vehículo no existe."
+
+  Escenario: Rechazar un conductor que no existe en Fleet
+    Dado que el administrador registró el vehículo "camión registrado" con placa "ABC-123", marca "Volvo", modelo "FH", año 2022 y capacidad "5000"
+    Y que la asignación consulta a Fleet sin usar el doble de prueba
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y el administrador asigna el viaje "viaje" al vehículo "camión registrado" y al conductor "luis@andes.pe"
+    Entonces la respuesta tiene código 404
+    Y el mensaje de error es "El conductor no existe."
+
   Escenario: Una empresa no puede asignar el viaje de otra empresa
     Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
     Dado que existe una empresa verificada con RUC "20987654321" y administrador "otro@otra.pe"

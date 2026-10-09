@@ -52,6 +52,17 @@ public class TripSteps {
     context.rememberVehicleId(name, UUID.randomUUID().toString());
   }
 
+  @Dado("que el vehículo {string} no está registrado en Fleet")
+  public void aVehicleIsNotRegisteredInFleet(String name) {
+    fleet.useRealAdapter(true);
+    context.rememberVehicleId(name, UUID.randomUUID().toString());
+  }
+
+  @Dado("que la asignación consulta a Fleet sin usar el doble de prueba")
+  public void assignmentQueriesFleetDirectly() {
+    fleet.useRealAdapter(true);
+  }
+
   @Dado("que la liquidación del viaje {string} de la empresa con RUC {string} fue cerrada")
   public void theSettlementWasClosed(String name, String ruc) {
     publisher.publishEvent(
