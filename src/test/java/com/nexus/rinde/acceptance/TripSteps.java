@@ -188,6 +188,20 @@ public class TripSteps {
         context.currentAdministratorToken(), tripName, vehicle, driverEmail, true);
   }
 
+  /** Asigna usando los ids que devuelve Fleet, sin pasar por el doble de prueba. */
+  @Dado("que el administrador asigna el viaje {string} con el vehículo de Fleet {string} y el conductor de Fleet {string}")
+  @Cuando("el administrador asigna el viaje {string} con el vehículo de Fleet {string} y el conductor de Fleet {string}")
+  public void theAdministratorAssignsWithFleetIds(
+      String tripName, String vehicleName, String driverName) throws Exception {
+    context.record(
+        api.assign(
+            context.currentAdministratorToken(),
+            context.tripIdOf(tripName),
+            context.vehicleIdOf(vehicleName),
+            context.driverIdOf(driverName),
+            false));
+  }
+
   @Cuando("el conductor {string} intenta asignar el viaje {string}")
   public void theDriverTriesToAssign(String driverEmail, String tripName) throws Exception {
     context.record(
@@ -308,6 +322,15 @@ public class TripSteps {
   @Y("la lista contiene {int} viajes")
   public void theTripListHasSize(int expected) throws Exception {
     assertThat(context.body().size()).isEqualTo(expected);
+  }
+
+  @Y("la lista incluye el viaje {string}")
+  public void theTripListIncludesTrip(String tripName) throws Exception {
+    List<String> ids =
+        StreamSupport.stream(context.body().spliterator(), false)
+            .map(trip -> trip.get("id").asText())
+            .toList();
+    assertThat(ids).contains(context.tripIdOf(tripName));
   }
 
   @Y("la lista está vacía")

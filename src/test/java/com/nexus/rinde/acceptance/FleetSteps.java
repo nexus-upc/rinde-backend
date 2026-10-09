@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -183,6 +184,33 @@ public class FleetSteps {
       String id = context.body().get("id").asText();
       context.rememberDriverId(name, id);
     }
+  }
+
+  @Dado(
+      "que el administrador registró el conductor {string} con documento {string} {string}, licencia {string} categoría {string} y vencimiento {string} vinculado al usuario {string}")
+  public void aDriverWasRegisteredForUser(
+      String name,
+      String docType,
+      String docNumber,
+      String licNumber,
+      String category,
+      String expDate,
+      String email)
+      throws Exception {
+    String token = context.currentAdministratorToken();
+    var res =
+        api.registerDriver(
+            token,
+            UUID.fromString(context.userIdOf(email)),
+            name,
+            docType,
+            docNumber,
+            licNumber,
+            category,
+            LocalDate.parse(expDate));
+    context.record(res);
+    assertThat(context.statusCode()).isEqualTo(201);
+    context.rememberDriverId(name, context.body().get("id").asText());
   }
 
   @Cuando("el conductor {string} intenta registrar un conductor con licencia {string}")
