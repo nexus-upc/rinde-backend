@@ -1,11 +1,11 @@
 package com.nexus.rinde.settlement.application.internal.commandservices;
 
-import com.nexus.rinde.expense.domain.model.aggregates.Expense;
 import com.nexus.rinde.settlement.application.internal.outboundservices.acl.ExternalExpenseService;
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.domain.model.commands.CloseSettlementCommand;
 import com.nexus.rinde.settlement.domain.model.commands.RecalculateSettlementCommand;
 import com.nexus.rinde.settlement.domain.model.commands.RegisterAdvanceCommand;
+import com.nexus.rinde.settlement.domain.model.valueobjects.ApprovedExpense;
 import com.nexus.rinde.settlement.domain.services.SettlementCommandService;
 import com.nexus.rinde.settlement.infrastructure.persistence.jpa.repositories.SettlementRepository;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
@@ -47,8 +47,9 @@ public class SettlementCommandServiceImpl implements SettlementCommandService {
   @Transactional
   public Settlement handle(RecalculateSettlementCommand command) {
     Settlement settlement = loadSettlement(command.settlementId(), command.tenantId());
-    List<Expense> approved =
-        externalExpenseService.findApprovedExpensesByTripId(settlement.getTripId());
+    List<ApprovedExpense> approved =
+        externalExpenseService.findApprovedExpensesByTripId(
+            command.tenantId(), settlement.getTripId());
     settlement.recalculate(approved);
     return settlementRepository.saveAndFlush(settlement);
   }
@@ -57,8 +58,9 @@ public class SettlementCommandServiceImpl implements SettlementCommandService {
   @Transactional
   public Settlement handle(CloseSettlementCommand command) {
     Settlement settlement = loadSettlement(command.settlementId(), command.tenantId());
-    List<Expense> approved =
-        externalExpenseService.findApprovedExpensesByTripId(settlement.getTripId());
+    List<ApprovedExpense> approved =
+        externalExpenseService.findApprovedExpensesByTripId(
+            command.tenantId(), settlement.getTripId());
     settlement.close(approved, command.closedBy(), clock.instant());
     return settlementRepository.saveAndFlush(settlement);
   }

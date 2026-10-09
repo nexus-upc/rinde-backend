@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** Implementación de la fachada que expone los gastos aprobados sin filtrar por sesión. */
+/** Implementación de la fachada que expone resúmenes de gastos filtrados por empresa. */
 @Component
 public class ExpenseContextFacadeImpl implements ExpenseContextFacade {
 
@@ -18,17 +18,35 @@ public class ExpenseContextFacadeImpl implements ExpenseContextFacade {
   }
 
   @Override
-  public List<Expense> findApprovedExpensesByTripId(UUID tripId) {
-    return expenseRepository.findByTripIdAndStatus(tripId, ExpenseStatus.APPROVED);
+  public List<ExpenseSummary> findApprovedExpensesByTripId(UUID tenantId, UUID tripId) {
+    return expenseRepository
+        .findByTenantIdAndTripIdAndStatus(tenantId, tripId, ExpenseStatus.APPROVED)
+        .stream()
+        .map(ExpenseContextFacadeImpl::toSummary)
+        .toList();
   }
 
   @Override
-  public List<Expense> findByTenantIdAndTripId(UUID tenantId, UUID tripId) {
-    return expenseRepository.findByTenantIdAndTripId(tenantId, tripId);
+  public List<ExpenseSummary> findByTenantIdAndTripId(UUID tenantId, UUID tripId) {
+    return expenseRepository.findByTenantIdAndTripId(tenantId, tripId).stream()
+        .map(ExpenseContextFacadeImpl::toSummary)
+        .toList();
   }
 
   @Override
-  public List<Expense> findByTenantId(UUID tenantId) {
-    return expenseRepository.findByTenantId(tenantId);
+  public List<ExpenseSummary> findByTenantId(UUID tenantId) {
+    return expenseRepository.findByTenantId(tenantId).stream()
+        .map(ExpenseContextFacadeImpl::toSummary)
+        .toList();
+  }
+
+  private static ExpenseSummary toSummary(Expense expense) {
+    return new ExpenseSummary(
+        expense.getId(),
+        expense.getCategory().name(),
+        expense.getAmount().getAmount(),
+        expense.getAmount().getCurrency(),
+        expense.getExpenseDate(),
+        expense.getStatus().name());
   }
 }

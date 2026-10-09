@@ -209,6 +209,42 @@ public class ExpenseSteps {
     }
   }
 
+  @Dado(
+      "que el conductor {string} registró el gasto {string} de tipo {string} por el monto {string}"
+          + " con clave {string} en el viaje {string}")
+  public void namedDriverRegistersExpense(
+      String email,
+      String expenseName,
+      String category,
+      String amount,
+      String idempotencyKey,
+      String tripName)
+      throws Exception {
+    String tripId = context.tripIdOf(tripName);
+    String token = context.accessTokenOf(email);
+    context.record(
+        api.register(
+            token,
+            tripId,
+            category,
+            new BigDecimal(amount),
+            "PEN",
+            LocalDate.parse("2026-10-20"),
+            idempotencyKey,
+            null,
+            null));
+    assertThat(context.statusCode()).isEqualTo(201);
+    context.rememberExpenseId(expenseName, context.body().get("id").asText());
+  }
+
+  @Dado("que el administrador {string} aprobó el gasto {string}")
+  public void namedAdministratorApprovesExpense(String email, String expenseName) throws Exception {
+    String expenseId = context.expenseIdOf(expenseName);
+    String token = context.accessTokenOf(email);
+    context.record(api.updateStatus(token, expenseId, "APPROVED", null));
+    assertThat(context.statusCode()).isEqualTo(200);
+  }
+
   @Cuando("el conductor consulta los gastos del viaje {string}")
   public void driverQueriesExpenses(String tripName) throws Exception {
     String tripId = context.tripIdOf(tripName);
