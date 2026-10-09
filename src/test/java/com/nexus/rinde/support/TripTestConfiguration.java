@@ -1,6 +1,7 @@
 package com.nexus.rinde.support;
 
 import com.nexus.rinde.iam.interfaces.acl.IamContextFacade;
+import com.nexus.rinde.trip.application.internal.outboundservices.acl.FleetAvailabilityAclService;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -12,7 +13,7 @@ public class TripTestConfiguration {
   @Bean
   @Primary
   public TestFleetAvailabilityService testFleetAvailabilityService(
-      IamContextFacade iamContextFacade) {
-    return new TestFleetAvailabilityService(iamContextFacade);
+      IamContextFacade iamContextFacade, FleetAvailabilityAclService realAdapter) {
+    return new TestFleetAvailabilityService(iamContextFacade, realAdapter);
   }
 }
