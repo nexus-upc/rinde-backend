@@ -40,6 +40,10 @@ rinde:
       invitation-validity-hours: 48
       password-reset-validity-hours: 1
       email-verification-validity-hours: 48
+  fleet:
+    maintenance-alerts:
+      # Cron de la revisión de mantenimientos próximos o vencidos (todos los días a las 6:00).
+      cron: "0 0 6 * * *"
   notification:
     retry:
       # Esperas en minutos antes de cada reintento; tras la quinta falla el aviso queda FAILED.

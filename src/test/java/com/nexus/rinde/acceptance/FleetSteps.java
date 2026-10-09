@@ -375,6 +375,11 @@ public class FleetSteps {
     assertThat(context.body().get("maintenanceState").asText()).isEqualTo(state);
   }
 
+  @Y("el vehículo queda con el estado {string}")
+  public void vehicleHasStatus(String status) throws Exception {
+    assertThat(context.body().get("status").asText()).isEqualTo(status);
+  }
+
   @Y("el vehículo está disponible para viaje")
   public void vehicleIsAvailableForTrip() throws Exception {
     assertThat(context.body().get("availableForTrip").asBoolean()).isTrue();
