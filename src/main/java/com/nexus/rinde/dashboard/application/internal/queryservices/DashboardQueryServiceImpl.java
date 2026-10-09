@@ -9,9 +9,8 @@ import com.nexus.rinde.dashboard.interfaces.rest.resources.FleetStatusResource.D
 import com.nexus.rinde.dashboard.interfaces.rest.resources.FleetStatusResource.VehicleSummary;
 import com.nexus.rinde.dashboard.interfaces.rest.resources.OperationalMetricsResource;
 import com.nexus.rinde.dashboard.interfaces.rest.resources.TripSummaryResource;
-import com.nexus.rinde.expense.domain.model.aggregates.Expense;
-import com.nexus.rinde.expense.domain.model.valueobjects.ExpenseStatus;
 import com.nexus.rinde.expense.interfaces.acl.ExpenseContextFacade;
+import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
 import com.nexus.rinde.fleet.domain.model.aggregates.Driver;
 import com.nexus.rinde.fleet.domain.model.aggregates.Vehicle;
 import com.nexus.rinde.fleet.domain.model.valueobjects.DriverStatus;
@@ -61,19 +60,19 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
             .findByIdAndTenantId(query.tripId(), query.tenantId())
             .orElseThrow(() -> new ResourceNotFoundException("El viaje no existe."));
 
-    List<Expense> expenses =
+    List<ExpenseSummary> expenses =
         expenseFacade.findByTenantIdAndTripId(query.tenantId(), query.tripId());
 
     BigDecimal expenseTotal =
         expenses.stream()
-            .filter(e -> e.getStatus() == ExpenseStatus.APPROVED)
-            .map(e -> e.getAmount().getAmount())
+            .filter(e -> "APPROVED".equals(e.status()))
+            .map(e -> e.amount())
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     String expenseCurrency =
         expenses.stream()
-            .filter(e -> e.getStatus() == ExpenseStatus.APPROVED)
-            .map(e -> e.getAmount().getCurrency())
+            .filter(e -> "APPROVED".equals(e.status()))
+            .map(e -> e.currency())
             .findFirst()
             .orElse("PEN");
 
@@ -161,7 +160,7 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
     UUID tenantId = query.tenantId();
 
     List<Trip> trips = tripFacade.findByTenantId(tenantId);
-    List<Expense> expenses = expenseFacade.findByTenantId(tenantId);
+    List<ExpenseSummary> expenses = expenseFacade.findByTenantId(tenantId);
 
     int scheduled = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.SCHEDULED).count();
     int assigned = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.ASSIGNED).count();
@@ -169,16 +168,16 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
     int finished = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.FINISHED).count();
     int settled = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.SETTLED).count();
 
-    int approved = (int) expenses.stream().filter(e -> e.getStatus() == ExpenseStatus.APPROVED).count();
+    int approved = (int) expenses.stream().filter(e -> "APPROVED".equals(e.status())).count();
     int pending =
         (int)
             expenses.stream()
                 .filter(
                     e ->
-                        e.getStatus() == ExpenseStatus.PENDING_SUPPORT
-                            || e.getStatus() == ExpenseStatus.REGISTERED)
+                        "PENDING_SUPPORT".equals(e.status())
+                            || "REGISTERED".equals(e.status()))
                 .count();
-    int observed = (int) expenses.stream().filter(e -> e.getStatus() == ExpenseStatus.OBSERVED).count();
+    int observed = (int) expenses.stream().filter(e -> "OBSERVED".equals(e.status())).count();
 
     return new OperationalMetricsResource(
         trips.size(),

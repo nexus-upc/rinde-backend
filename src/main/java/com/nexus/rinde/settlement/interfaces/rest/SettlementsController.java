@@ -1,6 +1,6 @@
 package com.nexus.rinde.settlement.interfaces.rest;
 
-import com.nexus.rinde.expense.domain.model.aggregates.Expense;
+import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.domain.model.commands.CloseSettlementCommand;
 import com.nexus.rinde.settlement.domain.model.commands.RecalculateSettlementCommand;
@@ -253,18 +253,18 @@ public class SettlementsController {
     sb.append("closedBy,").append(s.getClosedBy() != null ? s.getClosedBy() : "").append('\n');
     sb.append('\n');
     sb.append("expenseId,category,amount,currency,date,status\n");
-    for (Expense e : export.approvedExpenses()) {
-      sb.append(e.getId())
+    for (ExpenseSummary e : export.approvedExpenses()) {
+      sb.append(e.id())
           .append(',')
-          .append(e.getCategory())
+          .append(e.category())
           .append(',')
-          .append(e.getAmount().getAmount())
+          .append(e.amount())
           .append(',')
-          .append(e.getAmount().getCurrency())
+          .append(e.currency())
           .append(',')
-          .append(e.getExpenseDate())
+          .append(e.expenseDate())
           .append(',')
-          .append(e.getStatus())
+          .append(e.status())
           .append('\n');
     }
     return sb.toString();

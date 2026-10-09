@@ -19,8 +19,7 @@ public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
   @EntityGraph(attributePaths = "evidence")
   List<Expense> findByTenantIdAndTripId(UUID tenantId, UUID tripId);
 
-  @EntityGraph(attributePaths = "evidence")
-  List<Expense> findByTripIdAndStatus(UUID tripId, ExpenseStatus status);
+  List<Expense> findByTenantIdAndTripIdAndStatus(UUID tenantId, UUID tripId, ExpenseStatus status);
 
   List<Expense> findByTenantId(UUID tenantId);
 

@@ -1,6 +1,6 @@
 package com.nexus.rinde.settlement.application.internal.queryservices;
 
-import com.nexus.rinde.expense.domain.model.aggregates.Expense;
+import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
 import com.nexus.rinde.settlement.application.internal.outboundservices.acl.ExternalExpenseService;
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.domain.model.queries.ExportSettlementQuery;
@@ -50,8 +50,9 @@ public class SettlementQueryServiceImpl implements SettlementQueryService {
         settlementRepository
             .findByIdAndTenantId(query.settlementId(), query.tenantId())
             .orElseThrow(() -> new ResourceNotFoundException("La liquidación no existe."));
-    List<Expense> approved =
-        externalExpenseService.findApprovedExpensesByTripId(settlement.getTripId());
+    List<ExpenseSummary> approved =
+        externalExpenseService.findApprovedExpensesByTripId(
+            query.tenantId(), settlement.getTripId());
     return new SettlementExport(settlement, approved);
   }
 }
