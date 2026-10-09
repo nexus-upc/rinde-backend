@@ -9,6 +9,7 @@ import com.nexus.rinde.fleet.domain.model.queries.ListVehiclesQuery;
 import com.nexus.rinde.fleet.domain.services.DriverQueryService;
 import com.nexus.rinde.fleet.domain.services.VehicleQueryService;
 import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.DriverRepository;
+import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public class FleetContextFacadeImpl implements FleetContextFacade {
               status.vehicleId(),
               status.maintenanceState().name(),
               status.availableForTrip()));
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return Optional.empty();
     }
   }
@@ -54,7 +55,7 @@ public class FleetContextFacadeImpl implements FleetContextFacade {
       return Optional.of(
           new DriverEligibilitySummary(
               eligibility.driverId(), eligibility.eligible(), eligibility.reason()));
-    } catch (Exception e) {
+    } catch (ResourceNotFoundException e) {
       return Optional.empty();
     }
   }
