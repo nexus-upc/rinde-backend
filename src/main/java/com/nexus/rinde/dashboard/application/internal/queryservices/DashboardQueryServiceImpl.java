@@ -17,7 +17,7 @@ import com.nexus.rinde.fleet.domain.model.valueobjects.DriverStatus;
 import com.nexus.rinde.fleet.domain.model.valueobjects.VehicleStatus;
 import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.DriverRepository;
 import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.VehicleRepository;
-import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
+import com.nexus.rinde.settlement.interfaces.acl.SettlementSummary;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementContextFacade;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
 import com.nexus.rinde.trip.interfaces.acl.TripContextFacade;
@@ -75,7 +75,7 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
             .findFirst()
             .orElse("PEN");
 
-    Settlement settlement =
+    SettlementSummary settlement =
         settlementFacade.findByTripIdAndTenantId(query.tripId(), query.tenantId()).orElse(null);
 
     return new TripSummaryResource(
@@ -94,9 +94,9 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
         expenses.size(),
         expenseTotal,
         expenseCurrency,
-        settlement != null ? settlement.getStatus().name() : null,
-        settlement != null ? settlement.getAdvanceAmount() : null,
-        settlement != null ? settlement.getAdvanceBalance() : null);
+        settlement != null ? settlement.status() : null,
+        settlement != null ? settlement.advanceAmount() : null,
+        settlement != null ? settlement.advanceBalance() : null);
   }
 
   @Override
