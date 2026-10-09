@@ -40,6 +40,12 @@ rinde:
       invitation-validity-hours: 48
       password-reset-validity-hours: 1
       email-verification-validity-hours: 48
+  notification:
+    retry:
+      # Esperas en minutos antes de cada reintento; tras la quinta falla el aviso queda FAILED.
+      delays-minutes: [1, 2, 4, 8, 16]
+      # Cada cuánto se revisan los avisos vencidos, en milisegundos.
+      poll-delay-ms: 30000
 
 springdoc:
   api-docs:

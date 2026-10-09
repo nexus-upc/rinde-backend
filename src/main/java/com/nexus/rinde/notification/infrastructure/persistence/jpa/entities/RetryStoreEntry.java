@@ -1,18 +1,25 @@
 package com.nexus.rinde.notification.infrastructure.persistence.jpa.entities;
 
+import com.nexus.rinde.notification.domain.model.valueobjects.RetryPolicy;
 import com.nexus.rinde.notification.domain.model.valueobjects.TripAssignmentNotice;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
-/** Registro operativo de un aviso pendiente o entregado, con eventId como clave idempotente. */
+/** Registro operativo de un aviso pendiente, fallido o entregado; eventId es la clave idempotente. */
 @Entity
 @Table(schema = "notification", name = "retry_store")
 public class RetryStoreEntry {
+
+  public static final String PENDING = "PENDING";
+  public static final String DELIVERED = "DELIVERED";
+  public static final String FAILED = "FAILED";
 
   @Id
   @Column(name = "event_id", nullable = false, updatable = false)
@@ -45,6 +52,9 @@ public class RetryStoreEntry {
   @Column(name = "retry_count", nullable = false)
   private int retryCount;
 
+  @Column(name = "next_attempt_at")
+  private Instant nextAttemptAt;
+
   @Column(name = "last_error", length = 500)
   private String lastError;
 
@@ -68,7 +78,7 @@ public class RetryStoreEntry {
     this.destination = notice.destination();
     this.departureDate = notice.departureDate();
     this.message = notice.message();
-    this.deliveryStatus = "PENDING";
+    this.deliveryStatus = PENDING;
     this.retryCount = 0;
     this.lastError = "No hay token de dispositivo ni proveedor push configurado.";
     this.createdAt = now;
@@ -80,19 +90,51 @@ public class RetryStoreEntry {
   }
 
   public void markDelivered(Instant now) {
-    this.deliveryStatus = "DELIVERED";
+    this.deliveryStatus = DELIVERED;
+    this.nextAttemptAt = null;
     this.lastError = null;
     this.deliveredAt = now;
     this.updatedAt = now;
   }
 
-  public void markPending(String error, boolean deliveryAttempted, Instant now) {
-    this.deliveryStatus = "PENDING";
+  /** La primera falla no es un reintento; cada reintento fallido suma uno a retryCount. */
+  public void markFailed(String error, boolean retry, RetryPolicy policy, Instant now) {
     this.lastError = error;
-    if (deliveryAttempted) {
+    this.updatedAt = now;
+    if (retry) {
       this.retryCount++;
     }
-    this.updatedAt = now;
+    scheduleNextAttempt(policy, now);
+  }
+
+  /** Indica si el aviso sigue pendiente y su próximo intento ya venció. */
+  public boolean isDueAt(Instant now) {
+    return PENDING.equals(deliveryStatus) && nextAttemptAt != null && !nextAttemptAt.isAfter(now);
+  }
+
+  /** Reconstruye el aviso con los datos guardados; el instante del evento no se persiste, así que se usa createdAt. */
+  public TripAssignmentNotice toNotice() {
+    return new TripAssignmentNotice(
+        eventId,
+        tenantId,
+        tripId,
+        recipientDriverId,
+        tripCode,
+        destination,
+        departureDate,
+        createdAt,
+        message);
+  }
+
+  private void scheduleNextAttempt(RetryPolicy policy, Instant now) {
+    Optional<Duration> wait = policy.waitBeforeNextRetry(retryCount);
+    if (wait.isPresent()) {
+      this.deliveryStatus = PENDING;
+      this.nextAttemptAt = now.plus(wait.get());
+    } else {
+      this.deliveryStatus = FAILED;
+      this.nextAttemptAt = null;
+    }
   }
 
   public UUID getEventId() {
@@ -133,6 +175,10 @@ public class RetryStoreEntry {
 
   public int getRetryCount() {
     return retryCount;
+  }
+
+  public Instant getNextAttemptAt() {
+    return nextAttemptAt;
   }
 
   public String getLastError() {
