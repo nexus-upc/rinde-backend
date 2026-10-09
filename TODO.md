@@ -45,20 +45,20 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 ### Settlement (`settlement`)
 
-- [ ] POST /api/v1/settlements/advances (US35)
-- [ ] GET /api/v1/settlements/{id} (US25)
-- [ ] POST /api/v1/settlements/{id}/recalculation (US25)
-- [ ] POST /api/v1/settlements/{id}/close (US26)
-- [ ] GET /api/v1/settlements/{id}/export (US27)
-- [ ] GET /api/v1/trips/{tripId}/settlement (US28)
-- [ ] Migración y pruebas `.feature`
+- [x] POST /api/v1/settlements/advances (US35)
+- [x] GET /api/v1/settlements/{id} (US25)
+- [x] POST /api/v1/settlements/{id}/recalculation (US25)
+- [x] POST /api/v1/settlements/{id}/close (US26)
+- [x] GET /api/v1/settlements/{id}/export (US27)
+- [x] GET /api/v1/trips/{tripId}/settlement (US28)
+- [x] Migración y pruebas `.feature`
 
 ### Operations Dashboard (`dashboard`)
 
-- [ ] GET /api/v1/dashboard/trips/{tripId}/summary (US17)
-- [ ] GET /api/v1/dashboard/fleet-status (US37)
-- [ ] GET /api/v1/dashboard/metrics (US37)
-- [ ] Pruebas `.feature`
+- [x] GET /api/v1/dashboard/trips/{tripId}/summary (US17)
+- [x] GET /api/v1/dashboard/fleet-status (US37)
+- [x] GET /api/v1/dashboard/metrics (US37)
+- [x] Pruebas `.feature`
 
 ## Mathias Cárdenas
 
@@ -73,9 +73,17 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 - [x] GET /api/v1/drivers/{id}/eligibility (US13, US15)
 - [x] POST /api/v1/maintenances (US33)
 - [x] GET /api/v1/maintenances/alerts (US34)
+- [x] GET /api/v1/drivers/{id} (US13)
+- [x] GET /api/v1/vehicles/{id}/maintenance-status (US34)
+- [x] POST /api/v1/vehicles/{id}/maintenances (US33)
+- [x] Escuchar `TripStarted` y `TripFinished` para pasar la unidad a IN_TRIP y devolverla a AVAILABLE
+- [x] Publicar `MaintenanceDue` cuando un mantenimiento pasa a próximo o vencido
+- [ ] Escenarios `.feature` de US32 y US33
 - [x] Migración y pruebas `.feature`
 
 ### Incident Management (`incident`)
+
+Pendiente para el Sprint 2. Ningún otro contexto depende de él todavía.
 
 - [ ] POST /api/v1/incidents (US29)
 - [ ] GET /api/v1/incidents?tripId= (US30)
@@ -103,11 +111,15 @@ Meta del Sprint 1: al menos 12 endpoints funcionando, con su prueba `.feature`.
 
 - [ ] Escuchar TenantRegistered, UserInvited y PasswordResetRequested (correos de IAM)
 - [x] Escuchar `TripAssigned` y guardar un aviso idempotente pendiente en `notification.retry_store`
-- [ ] Configurar token/proveedor push y proceso de reintentos para entregar avisos de `TripAssigned`
+- [x] Reintentar los avisos y correos fallidos: 5 reintentos con esperas de 1, 2, 4, 8 y 16 minutos
+- [ ] Configurar el token del dispositivo y un proveedor push real para `TripAssigned`
 - [x] Escuchar `SubscriptionExpiring` y registrar el correo de renovación en la bandeja de salida simulada, de forma idempotente
-- [ ] Escuchar ExpenseObserved, MaintenanceDue e IncidentReported (avisos)
+- [x] Escuchar `MaintenanceDue` y avisar por correo al administrador
+- [ ] Escuchar ExpenseObserved e IncidentReported (avisos)
 
 ## Todo el equipo
 
+- [x] Comunicación entre contextos solo por `interfaces/acl` y eventos (las fachadas devuelven resúmenes, no agregados)
+- [x] Secretos en `.env` y `application.yml` en el repositorio
 - [ ] Refactorizar a microservicios (un servicio por bounded context y API Gateway)
 - [ ] Frontend web en Angular (inicio de sesión, registro de empresa y viajes)
