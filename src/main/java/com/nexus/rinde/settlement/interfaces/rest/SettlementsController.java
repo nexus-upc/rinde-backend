@@ -1,6 +1,5 @@
 package com.nexus.rinde.settlement.interfaces.rest;
 
-import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.domain.model.commands.CloseSettlementCommand;
 import com.nexus.rinde.settlement.domain.model.commands.RecalculateSettlementCommand;
@@ -9,6 +8,7 @@ import com.nexus.rinde.settlement.domain.model.queries.ExportSettlementQuery;
 import com.nexus.rinde.settlement.domain.model.queries.GetSettlementByIdQuery;
 import com.nexus.rinde.settlement.domain.model.queries.GetSettlementByTripIdQuery;
 import com.nexus.rinde.settlement.domain.model.queries.SettlementExport;
+import com.nexus.rinde.settlement.domain.model.valueobjects.ApprovedExpense;
 import com.nexus.rinde.settlement.domain.services.SettlementCommandService;
 import com.nexus.rinde.settlement.domain.services.SettlementQueryService;
 import com.nexus.rinde.settlement.interfaces.rest.resources.RegisterAdvanceResource;
@@ -253,8 +253,8 @@ public class SettlementsController {
     sb.append("closedBy,").append(s.getClosedBy() != null ? s.getClosedBy() : "").append('\n');
     sb.append('\n');
     sb.append("expenseId,category,amount,currency,date,status\n");
-    for (ExpenseSummary e : export.approvedExpenses()) {
-      sb.append(e.id())
+    for (ApprovedExpense e : export.approvedExpenses()) {
+      sb.append(e.expenseId())
           .append(',')
           .append(e.category())
           .append(',')

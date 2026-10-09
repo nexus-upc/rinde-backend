@@ -1,6 +1,6 @@
 package com.nexus.rinde.settlement.domain.model.aggregates;
 
-import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
+import com.nexus.rinde.settlement.domain.model.valueobjects.ApprovedExpense;
 import com.nexus.rinde.settlement.domain.model.valueobjects.SettlementStatus;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementClosed;
 import com.nexus.rinde.shared.domain.exceptions.BusinessRuleException;
@@ -94,11 +94,11 @@ public class Settlement extends AuditableAbstractAggregateRoot {
   }
 
   /** Recalcula el total de gastos aprobados y el balance del anticipo. */
-  public void recalculate(List<ExpenseSummary> approvedExpenses) {
+  public void recalculate(List<ApprovedExpense> approvedExpenses) {
     ensureOpen();
     BigDecimal total =
         approvedExpenses.stream()
-            .map(ExpenseSummary::amount)
+            .map(ApprovedExpense::amount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     String currency = this.advanceCurrency != null ? this.advanceCurrency : "PEN";
@@ -109,7 +109,7 @@ public class Settlement extends AuditableAbstractAggregateRoot {
   }
 
   /** Cierra la liquidación sumando los gastos aprobados y publica SettlementClosed. */
-  public void close(List<ExpenseSummary> approvedExpenses, UUID closedBy, Instant now) {
+  public void close(List<ApprovedExpense> approvedExpenses, UUID closedBy, Instant now) {
     recalculate(approvedExpenses);
     this.status = SettlementStatus.CLOSED;
     this.closedBy = closedBy;

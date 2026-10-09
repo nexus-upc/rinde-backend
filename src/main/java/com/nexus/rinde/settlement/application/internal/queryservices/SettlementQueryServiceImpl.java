@@ -1,12 +1,12 @@
 package com.nexus.rinde.settlement.application.internal.queryservices;
 
-import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
 import com.nexus.rinde.settlement.application.internal.outboundservices.acl.ExternalExpenseService;
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.domain.model.queries.ExportSettlementQuery;
 import com.nexus.rinde.settlement.domain.model.queries.GetSettlementByIdQuery;
 import com.nexus.rinde.settlement.domain.model.queries.GetSettlementByTripIdQuery;
 import com.nexus.rinde.settlement.domain.model.queries.SettlementExport;
+import com.nexus.rinde.settlement.domain.model.valueobjects.ApprovedExpense;
 import com.nexus.rinde.settlement.domain.services.SettlementQueryService;
 import com.nexus.rinde.settlement.infrastructure.persistence.jpa.repositories.SettlementRepository;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
@@ -50,7 +50,7 @@ public class SettlementQueryServiceImpl implements SettlementQueryService {
         settlementRepository
             .findByIdAndTenantId(query.settlementId(), query.tenantId())
             .orElseThrow(() -> new ResourceNotFoundException("La liquidación no existe."));
-    List<ExpenseSummary> approved =
+    List<ApprovedExpense> approved =
         externalExpenseService.findApprovedExpensesByTripId(
             query.tenantId(), settlement.getTripId());
     return new SettlementExport(settlement, approved);
