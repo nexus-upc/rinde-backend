@@ -17,7 +17,16 @@ public class SettlementContextFacadeImpl implements SettlementContextFacade {
   }
 
   @Override
-  public Optional<Settlement> findByTripIdAndTenantId(UUID tripId, UUID tenantId) {
-    return settlementRepository.findByTripIdAndTenantId(tripId, tenantId);
+  public Optional<SettlementSummary> findByTripIdAndTenantId(UUID tripId, UUID tenantId) {
+    return settlementRepository
+        .findByTripIdAndTenantId(tripId, tenantId)
+        .map(SettlementContextFacadeImpl::toSummary);
+  }
+
+  private static SettlementSummary toSummary(Settlement settlement) {
+    return new SettlementSummary(
+        settlement.getStatus().name(),
+        settlement.getAdvanceAmount(),
+        settlement.getAdvanceBalance());
   }
 }
