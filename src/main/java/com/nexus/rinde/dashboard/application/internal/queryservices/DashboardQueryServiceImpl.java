@@ -20,9 +20,8 @@ import com.nexus.rinde.fleet.infrastructure.persistence.jpa.repositories.Vehicle
 import com.nexus.rinde.settlement.domain.model.aggregates.Settlement;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementContextFacade;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
-import com.nexus.rinde.trip.domain.model.aggregates.Trip;
-import com.nexus.rinde.trip.domain.model.valueobjects.TripStatus;
 import com.nexus.rinde.trip.interfaces.acl.TripContextFacade;
+import com.nexus.rinde.trip.interfaces.acl.TripSummary;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +54,7 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   @Override
   @Transactional(readOnly = true)
   public TripSummaryResource handle(GetTripSummaryQuery query) {
-    Trip trip =
+    TripSummary trip =
         tripFacade
             .findByIdAndTenantId(query.tripId(), query.tenantId())
             .orElseThrow(() -> new ResourceNotFoundException("El viaje no existe."));
@@ -79,22 +78,19 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
     Settlement settlement =
         settlementFacade.findByTripIdAndTenantId(query.tripId(), query.tenantId()).orElse(null);
 
-    UUID vehicleId = trip.getAssignment() != null ? trip.getAssignment().vehicleId() : null;
-    UUID driverId = trip.getAssignment() != null ? trip.getAssignment().driverId() : null;
-
     return new TripSummaryResource(
-        trip.getId(),
-        trip.getCode(),
-        trip.getStatus().name(),
-        trip.getRoute().origin(),
-        trip.getRoute().destination(),
-        trip.getCargo().description(),
-        trip.getCargo().weightKg(),
-        trip.getDepartureDate(),
-        vehicleId,
-        driverId,
-        trip.getStartedAt(),
-        trip.getFinishedAt(),
+        trip.id(),
+        trip.code(),
+        trip.status(),
+        trip.origin(),
+        trip.destination(),
+        trip.cargoDescription(),
+        trip.cargoWeightKg(),
+        trip.departureDate(),
+        trip.vehicleId(),
+        trip.driverId(),
+        trip.startedAt(),
+        trip.finishedAt(),
         expenses.size(),
         expenseTotal,
         expenseCurrency,
@@ -159,14 +155,14 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   public OperationalMetricsResource handle(GetOperationalMetricsQuery query) {
     UUID tenantId = query.tenantId();
 
-    List<Trip> trips = tripFacade.findByTenantId(tenantId);
+    List<TripSummary> trips = tripFacade.findByTenantId(tenantId);
     List<ExpenseSummary> expenses = expenseFacade.findByTenantId(tenantId);
 
-    int scheduled = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.SCHEDULED).count();
-    int assigned = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.ASSIGNED).count();
-    int inRoute = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.IN_ROUTE).count();
-    int finished = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.FINISHED).count();
-    int settled = (int) trips.stream().filter(t -> t.getStatus() == TripStatus.SETTLED).count();
+    int scheduled = (int) trips.stream().filter(t -> "SCHEDULED".equals(t.status())).count();
+    int assigned = (int) trips.stream().filter(t -> "ASSIGNED".equals(t.status())).count();
+    int inRoute = (int) trips.stream().filter(t -> "IN_ROUTE".equals(t.status())).count();
+    int finished = (int) trips.stream().filter(t -> "FINISHED".equals(t.status())).count();
+    int settled = (int) trips.stream().filter(t -> "SETTLED".equals(t.status())).count();
 
     int approved = (int) expenses.stream().filter(e -> "APPROVED".equals(e.status())).count();
     int pending =
