@@ -9,6 +9,10 @@ spring:
     gateway:
       server:
         webflux:
+          # Un servicio que no responde a tiempo se informa como 503.
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 10s
           routes:
             # Orden explícito: las rutas más específicas van antes que los comodines.
             - id: iam-service
