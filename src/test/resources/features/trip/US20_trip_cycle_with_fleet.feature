@@ -14,7 +14,7 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
     Y que la asignación consulta a Fleet sin usar el doble de prueba
 
   Escenario: El conductor inicia y finaliza el viaje asignado con los ids de Fleet
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Cuando el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Entonces la respuesta tiene código 200
     Y el viaje queda en estado "ASSIGNED"
@@ -27,7 +27,7 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
     Y el viaje queda en estado "FINISHED"
 
   Escenario: El conductor ve el viaje asignado en su lista
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Cuando el conductor "luis@andes.pe" consulta sus viajes asignados
     Entonces la respuesta tiene código 200
@@ -38,7 +38,7 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
     Dado que el administrador invitó a "Marta Ríos" con el correo "marta@andes.pe" y el rol "DRIVER"
     Y que "marta@andes.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
     Y que el administrador registró el conductor "Marta Ríos" con documento "DNI" "30405060", licencia "Q30405060" categoría "A-IIIb" y vencimiento "2028-12-31" vinculado al usuario "marta@andes.pe"
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Cuando el conductor "marta@andes.pe" intenta iniciar el viaje "viaje"
     Entonces la respuesta tiene código 404
@@ -47,14 +47,14 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
   Escenario: Un conductor sin registro en Fleet recibe 404 al iniciar el viaje
     Dado que el administrador invitó a "Pablo Mendoza" con el correo "pablo@andes.pe" y el rol "DRIVER"
     Y que "pablo@andes.pe" definió la contraseña "Clave-De-Pablo-2026" con su enlace de invitación
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Cuando el conductor "pablo@andes.pe" intenta iniciar el viaje "viaje"
     Entonces la respuesta tiene código 404
     Y el mensaje de error es "El viaje no existe."
 
   Escenario: La unidad pasa a IN_TRIP en Fleet cuando el conductor inicia el viaje
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Dado que el conductor "luis@andes.pe" inició sesión
     Cuando el conductor "luis@andes.pe" inicia el viaje "viaje"
@@ -64,7 +64,7 @@ Característica: US20 Ciclo completo del viaje contra Fleet real
     Y el vehículo queda con el estado "IN_TRIP"
 
   Escenario: La unidad vuelve a AVAILABLE en Fleet cuando el conductor finaliza el viaje
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" con el vehículo de Fleet "camión" y el conductor de Fleet "Luis Quispe"
     Dado que el conductor "luis@andes.pe" inició sesión
     Y que el conductor "luis@andes.pe" inicia el viaje "viaje"

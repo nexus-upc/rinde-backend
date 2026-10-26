@@ -12,7 +12,7 @@ Característica: US17 Consultar el detalle de un viaje
     Y que existe el vehículo "camión"
 
   Escenario: Consultar todos los datos operativos del viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos", peso "850.25" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos", peso "850.25" y salida "HOY+5"
     Y que el viaje "viaje" ya fue asignado al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el administrador consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 200
@@ -24,7 +24,7 @@ Característica: US17 Consultar el detalle de un viaje
     Y la respuesta no incluye el campo "observations"
 
   Escenario: El detalle muestra el viaje liquidado al cerrarse su liquidación
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el viaje "viaje" ya fue asignado al vehículo "camión" y al conductor "luis@andes.pe"
     Y el conductor "luis@andes.pe" inicia el viaje "viaje"
     Y el conductor "luis@andes.pe" finaliza el viaje "viaje"
@@ -35,7 +35,7 @@ Característica: US17 Consultar el detalle de un viaje
     Y el historial contiene los estados "SCHEDULED,ASSIGNED,IN_ROUTE,FINISHED,SETTLED"
 
   Escenario: El conductor puede consultar su propio viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el viaje "viaje" ya fue asignado al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el usuario "luis@andes.pe" consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 200
@@ -44,13 +44,13 @@ Característica: US17 Consultar el detalle de un viaje
   Escenario: El conductor no puede consultar el viaje de otro conductor
     Dado que el administrador invitó a "Marta Ríos" con el correo "marta@andes.pe" y el rol "DRIVER"
     Y que "marta@andes.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el viaje "viaje" ya fue asignado al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el usuario "marta@andes.pe" consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 404
 
   Escenario: Una empresa no puede consultar el viaje de otra empresa
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Dado que existe una empresa verificada con RUC "20987654321" y administrador "otro@otra.pe"
     Y que el administrador "otro@otra.pe" inició sesión
     Cuando un administrador de otra empresa consulta el viaje "viaje"
@@ -61,6 +61,6 @@ Característica: US17 Consultar el detalle de un viaje
     Entonces la respuesta tiene código 404
 
   Escenario: Consultar el detalle requiere autenticación
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Cuando una persona sin token consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 401

@@ -25,7 +25,7 @@ Característica: US37 Consultar estado de flota y métricas operativas
     Y la respuesta incluye el campo "totalExpenses" con el valor "0"
 
   Escenario: Métricas operativas con un viaje programado
-    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Dado que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Cuando el administrador consulta las métricas operativas
     Entonces la respuesta tiene código 200
     Y la respuesta incluye el campo "totalTrips" con el valor "1"

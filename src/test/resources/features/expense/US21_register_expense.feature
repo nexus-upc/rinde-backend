@@ -10,20 +10,20 @@ Característica: US21 Registrar un gasto con su evidencia desde el móvil
     Y que el administrador invitó a "Luis Quispe" con el correo "luis@andes.pe" y el rol "DRIVER"
     Y que "luis@andes.pe" definió la contraseña "Clave-De-Luis-2026" con su enlace de invitación
     Y que existe el vehículo "camión"
-    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Y que el conductor "luis@andes.pe" inició sesión
     Y que el conductor inicia el viaje "viaje"
 
   Escenario: Registro correcto del gasto con evidencia fotográfica
-    Cuando el conductor registra un gasto de tipo "FUEL" por el monto "180.50" en fecha "2026-10-20" con evidencia "https://storage.rinde.pe/evidences/recibo1.jpg" y clave "KEY-EXP-001" en el viaje "viaje"
+    Cuando el conductor registra un gasto de tipo "FUEL" por el monto "180.50" en fecha "HOY+5" con evidencia "https://storage.rinde.pe/evidences/recibo1.jpg" y clave "KEY-EXP-001" en el viaje "viaje"
     Entonces la respuesta tiene código 201
     Y la respuesta incluye el campo "status" con el valor "REGISTERED"
     Y la respuesta incluye el campo "category" con el valor "FUEL"
     Y la respuesta incluye el campo "amount" con el valor "180.5"
 
   Escenario: Gasto sin evidencia queda pendiente de sustento
-    Cuando el conductor registra un gasto de tipo "TOLL" por el monto "25.00" en fecha "2026-10-20" sin evidencia y clave "KEY-EXP-002" en el viaje "viaje"
+    Cuando el conductor registra un gasto de tipo "TOLL" por el monto "25.00" en fecha "HOY+5" sin evidencia y clave "KEY-EXP-002" en el viaje "viaje"
     Entonces la respuesta tiene código 201
     Y la respuesta incluye el campo "status" con el valor "PENDING_SUPPORT"
 
@@ -61,13 +61,13 @@ Característica: US21 Registrar un gasto con su evidencia desde el móvil
     Y el mensaje de error es "El viaje no existe."
 
   Escenario: Rechazar gasto en un viaje que todavía no ha iniciado
-    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "2026-10-25"
-    Cuando el conductor registra un gasto de tipo "FOOD" por el monto "20.00" en fecha "2026-10-20" sin evidencia y clave "KEY-EXP-PROGRAMADO" en el viaje "programado"
+    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "HOY+10"
+    Cuando el conductor registra un gasto de tipo "FOOD" por el monto "20.00" en fecha "HOY+5" sin evidencia y clave "KEY-EXP-PROGRAMADO" en el viaje "programado"
     Entonces la respuesta tiene código 409
     Y el mensaje de error es "El viaje todavía no ha iniciado."
 
   Escenario: Registrar gasto en un viaje ya finalizado
     Dado que el conductor "luis@andes.pe" finaliza el viaje "viaje"
-    Cuando el conductor registra un gasto de tipo "TOLL" por el monto "12.00" en fecha "2026-10-20" sin evidencia y clave "KEY-EXP-FINALIZADO" en el viaje "viaje"
+    Cuando el conductor registra un gasto de tipo "TOLL" por el monto "12.00" en fecha "HOY+5" sin evidencia y clave "KEY-EXP-FINALIZADO" en el viaje "viaje"
     Entonces la respuesta tiene código 201
     Y la respuesta incluye el campo "status" con el valor "PENDING_SUPPORT"
