@@ -59,6 +59,7 @@ Endpoints públicos. Los de acceso y registro no llevan JWT; el resto requiere `
 | POST | `/api/v1/auth/password` | Definición de contraseña con el enlace recibido (US10 y US11). |
 | POST | `/api/v1/tenants` | Registro de empresa y de su administrador (US08). |
 | POST | `/api/v1/tenants/{id}/verification` | Verificación del correo de la empresa (US08). |
+| GET | `/api/v1/users/me` | Perfil del usuario que inicia sesión, con los datos de su empresa (cualquier rol). Responde `{id, fullName, email, role, status, tenant: {id, tradeName, ruc, status}}`. |
 | GET | `/api/v1/users` | Listado de usuarios de la empresa (US11). |
 | POST | `/api/v1/users` | Invitación de usuario (US11). |
 | PATCH | `/api/v1/users/{id}` | Cambio de rol o de estado de un usuario (US11). |
