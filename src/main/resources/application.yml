@@ -22,11 +22,30 @@ spring:
   # Cada bounded context declara su propio Flyway (esquema y migraciones propios).
   flyway:
     enabled: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        prefetch: 1
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 200ms
+          multiplier: 2
+          max-interval: 2s
 
 server:
   port: 8080
 
 rinde:
+  messaging:
+    exchange: ${RINDE_EVENTS_EXCHANGE:rinde.events}
+    notification:
+      queue: ${RINDE_NOTIFICATION_QUEUE:notification.trip-assigned}
   security:
     jwt:
       # Mínimo 32 caracteres.
