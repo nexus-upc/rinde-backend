@@ -61,3 +61,22 @@ Si el mismo evento llega por ambos canales, usa el mismo registro de idempotenci
 
 La conexión se configura con las variables `RABBITMQ_*` de `.env.example`. Las pruebas de mensajería
 usan colas aisladas con nombres aleatorios y requieren RabbitMQ y `rinde_test` disponibles.
+
+## Suscripciones e IAM separado (S2-09)
+
+Después del commit del pago o del cambio de estado, se publican `subscription.activated` y
+`subscription.suspended` en `rinde.events`. El JSON contiene `eventId`, `occurredAt` y `tenantId`.
+El productor declara también la cola durable `iam.subscription-events` y sus bindings, de modo
+que el mensaje quede guardado aunque IAM aún no haya arrancado. Ambos procesos deben usar los
+mismos valores de `RINDE_EVENTS_EXCHANGE` y `RINDE_IAM_SUBSCRIPTION_QUEUE`.
+
+Se solicitan confirmaciones del broker y devolución de mensajes sin ruta. Los fallos de conexión
+se reintentan hasta tres veces. Si no se confirma la publicación, el error registra el eventId
+y requiere conciliación: no hay outbox transaccional ni recuperación automática de una caída
+del proceso entre el commit y la publicación. Esa garantía queda fuera del Sprint 2.
+
+IAM aplica el mensaje y registra su identificador en su propia base. Notifications y Fleet
+mantienen los eventos locales que ya consumían; no se eliminan contextos del monolito.
+El acceso al monolito con empresas creadas solo en IAM separado sigue pendiente de la adaptación
+general de identidad. Las pruebas de esta tarea verifican el pago, el contrato del productor,
+los commits y rollbacks, y el consumidor de IAM por separado.

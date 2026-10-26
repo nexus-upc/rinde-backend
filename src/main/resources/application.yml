@@ -27,6 +27,16 @@ spring:
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 200ms
+        multiplier: 2
+        max-interval: 2s
     listener:
       simple:
         prefetch: 1
@@ -46,6 +56,8 @@ rinde:
     exchange: ${RINDE_EVENTS_EXCHANGE:rinde.events}
     notification:
       queue: ${RINDE_NOTIFICATION_QUEUE:notification.trip-assigned}
+    subscription:
+      queue: ${RINDE_IAM_SUBSCRIPTION_QUEUE:iam.subscription-events}
   security:
     jwt:
       # Mínimo 32 caracteres.
