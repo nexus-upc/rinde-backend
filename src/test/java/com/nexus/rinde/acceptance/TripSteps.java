@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementClosed;
+import com.nexus.rinde.support.RelativeDates;
 import com.nexus.rinde.support.TestFleetAvailabilityService;
 import com.nexus.rinde.support.TripApi;
 import com.nexus.rinde.trip.domain.model.valueobjects.MaintenanceState;
@@ -14,7 +15,6 @@ import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Y;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -137,7 +137,7 @@ public class TripSteps {
             Map.of(
                 "origin", "Lima",
                 "cargoDescription", "Repuestos",
-                "departureDate", "2026-10-20")));
+                "departureDate", RelativeDates.resolve("HOY+5"))));
   }
 
   @Cuando("el administrador intenta programar un viaje con peso {string}")
@@ -148,7 +148,7 @@ public class TripSteps {
         "Arequipa",
         "Repuestos",
         new BigDecimal(weight),
-        "2026-10-20",
+        RelativeDates.resolve("HOY+5"),
         false);
   }
 
@@ -156,7 +156,7 @@ public class TripSteps {
   public void anUnauthenticatedPersonSchedulesTrip() throws Exception {
     context.record(
         api.schedule(
-            null, "Lima", "Arequipa", "Repuestos", null, LocalDate.parse("2026-10-20"), false));
+            null, "Lima", "Arequipa", "Repuestos", null, RelativeDates.date("HOY+5"), false));
   }
 
   @Cuando("el conductor {string} intenta programar un viaje")
@@ -168,7 +168,7 @@ public class TripSteps {
             "Arequipa",
             "Repuestos",
             null,
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             false));
   }
 
@@ -427,7 +427,7 @@ public class TripSteps {
             destination,
             cargo,
             weight,
-            LocalDate.parse(departureDate),
+            RelativeDates.date(departureDate),
             confirmPastDate));
     if (context.statusCode() == 201) {
       context.rememberTripId(name, context.body().get("id").asText());

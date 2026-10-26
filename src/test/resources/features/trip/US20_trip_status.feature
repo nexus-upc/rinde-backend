@@ -12,7 +12,7 @@ Característica: US20 Iniciar y finalizar un viaje
     Y que existe el vehículo "camión"
 
   Escenario: El conductor inicia y finaliza su viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el conductor "luis@andes.pe" inicia el viaje "viaje"
     Entonces la respuesta tiene código 200
@@ -26,14 +26,14 @@ Característica: US20 Iniciar y finalizar un viaje
     Y se publica el evento "TripFinished" para "luis@andes.pe"
 
   Escenario: Finalizar antes de iniciar produce conflicto de estado
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el conductor "luis@andes.pe" finaliza el viaje "viaje"
     Entonces la respuesta tiene código 409
     Y el mensaje de error contiene "ASSIGNED"
 
   Escenario: No se puede iniciar nuevamente un viaje finalizado
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Y el conductor "luis@andes.pe" inicia el viaje "viaje"
     Y el conductor "luis@andes.pe" finaliza el viaje "viaje"
@@ -44,13 +44,13 @@ Característica: US20 Iniciar y finalizar un viaje
   Escenario: Un conductor distinto recibe 404
     Dado que el administrador invitó a "Marta Ríos" con el correo "marta@andes.pe" y el rol "DRIVER"
     Y que "marta@andes.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el conductor "marta@andes.pe" intenta iniciar el viaje "viaje"
     Entonces la respuesta tiene código 404
 
   Escenario: Otra empresa recibe 404 al iniciar un viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Dado que existe una empresa verificada con RUC "20987654321" y administrador "otro@otra.pe"
     Y que el administrador "otro@otra.pe" inició sesión
@@ -60,6 +60,6 @@ Característica: US20 Iniciar y finalizar un viaje
     Entonces la respuesta tiene código 404
 
   Escenario: Un administrador no puede iniciar el viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Cuando el administrador intenta iniciar el viaje "viaje"
     Entonces la respuesta tiene código 403

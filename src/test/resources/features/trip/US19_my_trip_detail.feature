@@ -12,7 +12,7 @@ Característica: US19 Consultar el detalle propio de un viaje
     Y que existe el vehículo "camión"
 
   Escenario: El conductor abre el detalle de su viaje
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el usuario "luis@andes.pe" consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 200
@@ -24,13 +24,13 @@ Característica: US19 Consultar el detalle propio de un viaje
   Escenario: El conductor recibe 404 por un viaje ajeno
     Dado que el administrador invitó a "Marta Ríos" con el correo "marta@andes.pe" y el rol "DRIVER"
     Y que "marta@andes.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Cuando el usuario "marta@andes.pe" consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 404
 
   Escenario: Un administrador conserva acceso al detalle operativo
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Cuando el administrador consulta el detalle del viaje "viaje"
     Entonces la respuesta tiene código 200
     Y el viaje queda en estado "SCHEDULED"

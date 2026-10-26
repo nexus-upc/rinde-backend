@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexus.rinde.support.FleetApi;
+import com.nexus.rinde.support.RelativeDates;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Y;
@@ -152,7 +153,7 @@ public class FleetSteps {
             docNumber,
             licNumber,
             category,
-            LocalDate.parse(expDate));
+            RelativeDates.date(expDate));
     context.record(res);
     String id = context.body().get("id").asText();
     context.rememberDriverId(name, id);
@@ -178,7 +179,7 @@ public class FleetSteps {
             docNumber,
             licNumber,
             category,
-            LocalDate.parse(expDate));
+            RelativeDates.date(expDate));
     context.record(res);
     if (context.statusCode() == 201) {
       String id = context.body().get("id").asText();
@@ -207,7 +208,7 @@ public class FleetSteps {
             docNumber,
             licNumber,
             category,
-            LocalDate.parse(expDate));
+            RelativeDates.date(expDate));
     context.record(res);
     assertThat(context.statusCode()).isEqualTo(201);
     context.rememberDriverId(name, context.body().get("id").asText());
@@ -267,10 +268,10 @@ public class FleetSteps {
             token,
             vehicleId,
             type,
-            LocalDate.parse(execDate),
+            RelativeDates.date(execDate),
             25000,
             new BigDecimal(cost),
-            LocalDate.parse(nextDate),
+            RelativeDates.date(nextDate),
             "Mantenimiento programado");
     context.record(res);
   }
@@ -291,10 +292,10 @@ public class FleetSteps {
             token,
             vehicleId,
             type,
-            LocalDate.parse(execDate),
+            RelativeDates.date(execDate),
             25000,
             new BigDecimal(cost),
-            LocalDate.parse(nextDate),
+            RelativeDates.date(nextDate),
             "Servicio de taller");
     context.record(res);
   }

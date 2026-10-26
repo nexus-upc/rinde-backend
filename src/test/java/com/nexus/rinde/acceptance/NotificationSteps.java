@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.entities.RetryStoreEntry;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.repositories.RetryStoreRepository;
 import com.nexus.rinde.support.CapturedEvents;
+import com.nexus.rinde.support.RelativeDates;
 import com.nexus.rinde.trip.domain.model.events.TripAssigned;
 import io.cucumber.java.es.Y;
-import java.time.LocalDate;
 
 /** Pasos BDD que verifican recepción del evento y preparación del aviso pendiente. */
 public class NotificationSteps {
@@ -38,9 +38,10 @@ public class NotificationSteps {
     assertThat(entry.getRecipientDriverId()).isEqualTo(event.driverId());
     assertThat(entry.getTripCode()).isEqualTo(event.code());
     assertThat(entry.getDestination()).isEqualTo(destination);
-    assertThat(entry.getDepartureDate()).isEqualTo(LocalDate.parse(departureDate));
+    String departure = RelativeDates.resolve(departureDate);
+    assertThat(entry.getDepartureDate()).isEqualTo(RelativeDates.date(departureDate));
     assertThat(entry.getMessage())
-        .contains(event.code(), destination, departureDate);
+        .contains(event.code(), destination, departure);
     assertThat(entry.getDeliveryStatus()).isEqualTo("PENDING");
     assertThat(entry.getRetryCount()).isZero();
     assertThat(entry.getLastError()).containsIgnoringCase("no hay token de dispositivo");

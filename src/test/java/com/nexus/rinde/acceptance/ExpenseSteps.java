@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexus.rinde.support.ExpenseApi;
+import com.nexus.rinde.support.RelativeDates;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Y;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,7 +45,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse(date),
+            RelativeDates.date(date),
             idempotencyKey,
             evidenceUrl,
             2048L));
@@ -66,7 +66,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse(date),
+            RelativeDates.date(date),
             idempotencyKey,
             null,
             null));
@@ -83,7 +83,7 @@ public class ExpenseSteps {
             "FUEL",
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             "KEY-INVALID-" + System.nanoTime(),
             null,
             null));
@@ -102,7 +102,7 @@ public class ExpenseSteps {
         category,
         new BigDecimal(amount),
         "PEN",
-        LocalDate.parse("2026-10-20"),
+        RelativeDates.date("HOY+5"),
         idempotencyKey,
         null,
         null);
@@ -122,7 +122,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             idempotencyKey,
             null,
             null));
@@ -144,7 +144,7 @@ public class ExpenseSteps {
             "FUEL",
             new BigDecimal("100.00"),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             "KEY-NOAUTH",
             null,
             null));
@@ -165,7 +165,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             idempotencyKey,
             null,
             null);
@@ -197,7 +197,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             idempotencyKey,
             evidenceUrl,
             2048L);
@@ -229,7 +229,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             idempotencyKey,
             null,
             null));
@@ -252,7 +252,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             idempotencyKey,
             null,
             null));
@@ -271,7 +271,7 @@ public class ExpenseSteps {
             category,
             new BigDecimal(amount),
             "PEN",
-            LocalDate.parse("2026-10-20"),
+            RelativeDates.date("HOY+5"),
             "KEY-UNKNOWN-" + System.nanoTime(),
             null,
             null));
@@ -333,7 +333,7 @@ public class ExpenseSteps {
     item.put("category", "FOOD");
     item.put("amount", new java.math.BigDecimal("25.00"));
     item.put("currency", "PEN");
-    item.put("expenseDate", "2026-10-20");
+    item.put("expenseDate", RelativeDates.resolve("HOY+5"));
     item.put("idempotencyKey", idempotencyKey);
     return item;
   }
@@ -417,7 +417,7 @@ public class ExpenseSteps {
       item.put("category", "FOOD");
       item.put("amount", new java.math.BigDecimal("25.00"));
       item.put("currency", "PEN");
-      item.put("expenseDate", "2026-10-20");
+      item.put("expenseDate", RelativeDates.resolve("HOY+5"));
       item.put("idempotencyKey", "KEY-SYNC-" + i + "-" + System.nanoTime());
       items.add(item);
     }
@@ -438,7 +438,7 @@ public class ExpenseSteps {
     item1.put("category", "FUEL");
     item1.put("amount", new java.math.BigDecimal("100.00"));
     item1.put("currency", "PEN");
-    item1.put("expenseDate", "2026-10-20");
+    item1.put("expenseDate", RelativeDates.resolve("HOY+5"));
     item1.put("idempotencyKey", existingKey);
     items.add(item1);
 
@@ -447,7 +447,7 @@ public class ExpenseSteps {
     item2.put("category", "TOLL");
     item2.put("amount", new java.math.BigDecimal("15.00"));
     item2.put("currency", "PEN");
-    item2.put("expenseDate", "2026-10-20");
+    item2.put("expenseDate", RelativeDates.resolve("HOY+5"));
     item2.put("idempotencyKey", newKey);
     items.add(item2);
 
@@ -462,7 +462,7 @@ public class ExpenseSteps {
     item.put("category", "FUEL");
     item.put("amount", new java.math.BigDecimal("50.00"));
     item.put("currency", "PEN");
-    item.put("expenseDate", "2026-10-20");
+    item.put("expenseDate", RelativeDates.resolve("HOY+5"));
     item.put("idempotencyKey", "KEY-NOAUTH-SYNC");
     context.record(api.sync(null, java.util.List.of(item)));
   }

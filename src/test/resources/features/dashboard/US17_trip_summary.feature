@@ -10,7 +10,7 @@ Característica: US17 Consultar resumen consolidado de un viaje
     Y que el administrador invitó a "Luis Quispe" con el correo "luis@andes.pe" y el rol "DRIVER"
     Y que "luis@andes.pe" definió la contraseña "Clave-De-Luis-2026" con su enlace de invitación
     Y que existe el vehículo "camión"
-    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
 
   Escenario: Resumen de un viaje asignado

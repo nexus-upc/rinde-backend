@@ -12,9 +12,9 @@ Característica: US16 Consultar el tablero de viajes
     Y que existe el vehículo "camión"
 
   Escenario: Filtrar por más de un estado
-    Cuando el administrador programa el viaje "asignado" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "asignado" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "asignado" al vehículo "camión" y al conductor "luis@andes.pe"
-    Y el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Muebles" y salida "2026-10-21"
+    Y el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Muebles" y salida "HOY+6"
     Y el administrador consulta el tablero con estados "SCHEDULED,ASSIGNED"
     Entonces la respuesta tiene código 200
     Y la lista contiene 2 viajes
@@ -30,7 +30,7 @@ Característica: US16 Consultar el tablero de viajes
     Entonces la respuesta tiene código 403
 
   Escenario: El tablero no expone viajes de otra empresa
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Dado que existe una empresa verificada con RUC "20987654321" y administrador "otro@otra.pe"
     Y que el administrador "otro@otra.pe" inició sesión
     Cuando el administrador consulta el tablero sin filtro

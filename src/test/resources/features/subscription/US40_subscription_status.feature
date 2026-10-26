@@ -9,11 +9,11 @@ Característica: US40 Controlar el estado de la suscripción
     Y que el administrador "ana@andes.pe" inició sesión
 
   Escenario: Consultar el estado y la vigencia de la empresa
-    Dado que existe una suscripción activa de prueba con vencimiento "2026-10-13T00:00:00Z"
+    Dado que existe una suscripción activa de prueba con vencimiento "HOY+20T00:00:00Z"
     Cuando el administrador consulta la suscripción de la empresa
     Entonces la respuesta tiene código 200
     Y la suscripción consultada tiene el estado "ACTIVE"
-    Y la suscripción consultada vence en "2026-10-13T00:00:00Z"
+    Y la suscripción consultada vence en "HOY+20T00:00:00Z"
 
   Escenario: Una empresa no puede consultar la suscripción de otra empresa
     Dado que existe el plan activo de prueba "Plan-Consulta" con precio mensual "37.50" y límite 5
@@ -24,7 +24,7 @@ Característica: US40 Controlar el estado de la suscripción
     Entonces la respuesta tiene código 404
 
   Escenario: Consultar una suscripción sin token requiere autenticación
-    Dado que existe una suscripción activa de prueba con vencimiento "2026-10-13T00:00:00Z"
+    Dado que existe una suscripción activa de prueba con vencimiento "HOY+20T00:00:00Z"
     Cuando una persona sin token consulta la suscripción de la empresa
     Entonces la respuesta tiene código 401
 
@@ -40,7 +40,7 @@ Característica: US40 Controlar el estado de la suscripción
     Dado que el administrador invitó a "Luis Quispe" con el correo "luis@andes.pe" y el rol "DRIVER"
     Y que "luis@andes.pe" definió la contraseña "Clave-De-Luis-2026" con su enlace de invitación
     Y que el administrador registró el vehículo "camión" con placa "US40-1001", marca "Volvo", modelo "FH", año 2022 y capacidad "5000"
-    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Y que el conductor "luis@andes.pe" inicia el viaje "viaje"
     Y que existe una suscripción activa vencida hace más de tres días

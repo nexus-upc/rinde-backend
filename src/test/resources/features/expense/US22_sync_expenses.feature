@@ -10,7 +10,7 @@ Característica: US22 Sincronizar gastos registrados sin conexión (Offline Sync
     Y que el administrador invitó a "Luis Quispe" con el correo "luis@andes.pe" y el rol "DRIVER"
     Y que "luis@andes.pe" definió la contraseña "Clave-De-Luis-2026" con su enlace de invitación
     Y que existe el vehículo "camión"
-    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Y que el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje" al vehículo "camión" y al conductor "luis@andes.pe"
     Y que el conductor "luis@andes.pe" inició sesión
     Y que el conductor inicia el viaje "viaje"
@@ -39,7 +39,7 @@ Característica: US22 Sincronizar gastos registrados sin conexión (Offline Sync
     Entonces la lista de gastos contiene 1 elementos
 
   Escenario: Lote en el que todos los gastos son inválidos responde 200 con todos rechazados
-    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "2026-10-25"
+    Dado que el administrador programa el viaje "programado" de "Lima" a "Cusco" con carga "Papel" y salida "HOY+10"
     Cuando el conductor sincroniza un lote con un gasto para el viaje "programado" y otro para el viaje "inexistente"
     Entonces la respuesta tiene código 200
     Y la respuesta incluye el campo "synchronizedCount" con el valor "0"
@@ -63,7 +63,7 @@ Característica: US22 Sincronizar gastos registrados sin conexión (Offline Sync
     Y que el administrador invitó a "Marta Ruiz" con el correo "marta@beta.pe" y el rol "DRIVER"
     Y que "marta@beta.pe" definió la contraseña "Clave-De-Marta-2026" con su enlace de invitación
     Y que existe el vehículo "camión beta"
-    Y que el administrador programa el viaje "viaje ajeno" de "Lima" a "Trujillo" con carga "Papel" y salida "2026-10-20"
+    Y que el administrador programa el viaje "viaje ajeno" de "Lima" a "Trujillo" con carga "Papel" y salida "HOY+5"
     Y que el administrador asigna el viaje "viaje ajeno" al vehículo "camión beta" y al conductor "marta@beta.pe"
     Y que el conductor "marta@beta.pe" inició sesión
     Y que el conductor "marta@beta.pe" inicia el viaje "viaje ajeno"
