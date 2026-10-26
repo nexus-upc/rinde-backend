@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /** Repositorio de suscripciones. Las consultas que reciben empresa filtran por tenantId. */
 @Repository
@@ -25,4 +28,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
   List<Subscription> findByStatusAndExpiresAtLessThanEqual(SubscriptionStatus status, Instant at);
 
   long countByTenantId(UUID tenantId);
+
+  @Query("select s from Subscription s where s.tenantId = :tenantId "
+      + "order by case when s.status = :pending then 0 else 1 end, "
+      + "s.expiresAt desc, s.subscriptionId desc")
+  List<Subscription> findCurrentCandidates(@Param("tenantId") UUID tenantId,
+      @Param("pending") SubscriptionStatus pending, Pageable page);
 }

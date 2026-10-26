@@ -27,6 +27,7 @@ public abstract class AbstractIntegrationTest {
   @DynamicPropertySource
   static void databaseProperties(DynamicPropertyRegistry registry) {
     TestDatabase.registerUrl(registry);
+    registry.add("rinde.iam.remote-enabled", () -> false);
     registry.add("rinde.messaging.notification.queue", () -> NOTIFICATION_QUEUE);
     registry.add("rinde.messaging.exchange", () -> NOTIFICATION_QUEUE + ".events");
     registry.add("rinde.messaging.subscription.queue", () -> NOTIFICATION_QUEUE + ".subscriptions");

@@ -77,6 +77,26 @@ del proceso entre el commit y la publicación. Esa garantía queda fuera del Spr
 
 IAM aplica el mensaje y registra su identificador en su propia base. Notifications y Fleet
 mantienen los eventos locales que ya consumían; no se eliminan contextos del monolito.
-El acceso al monolito con empresas creadas solo en IAM separado sigue pendiente de la adaptación
-general de identidad. Las pruebas de esta tarea verifican el pago, el contrato del productor,
-los commits y rollbacks, y el consumidor de IAM por separado.
+Las pruebas de esta tarea verifican el pago, el contrato del productor, los commits y rollbacks,
+y el consumidor de IAM por separado.
+
+## Integración de la web con IAM y suscripciones
+
+Por defecto, `RINDE_IAM_REMOTE_ENABLED=true` selecciona la fachada HTTP de IAM y
+`IAM_SERVICE_URL` apunta a `http://localhost:8081`. Los contextos del monolito consultan usuarios,
+estado de empresa y correo del administrador por HTTP. No se copian filas de IAM a la base local.
+Si IAM no responde, la API informa 503. El listener local de suscripciones de IAM queda desactivado
+en este modo: la actualización de la empresa llega al servicio separado por RabbitMQ.
+
+Para conservar la ejecución histórica del monolito completo puede usarse
+`RINDE_IAM_REMOTE_ENABLED=false`. Las pruebas existentes seleccionan este modo expresamente.
+
+`GET /api/v1/subscriptions/current` consulta la suscripción de la empresa autenticada y devuelve
+204 cuando aún no tiene una. Prioriza la suscripción pendiente de pago frente a una anterior;
+de otro modo elige la de vigencia más reciente. Cada consulta sigue limitada a su empresa.
+
+El checkout agrega `confirmationEnabled`. Solo con `RINDE_BILLING_SIMULATION_ENABLED=true`
+se registra `POST /api/v1/subscriptions/{id}/payments/{paymentId}/simulation`, que recibe
+`{"status":"CONFIRMED"}` o `{"status":"REJECTED"}`. Exige administrador y valida la empresa y la
+suscripción del pago. Reutiliza el procesamiento idempotente del webhook sin entregar su clave
+HMAC a la web. La simulación está desactivada por defecto y debe habilitarse solo para pruebas.
