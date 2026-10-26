@@ -39,6 +39,7 @@ El resto exige `Authorization: Bearer <jwt>`. Si el token falta, tiene firma dis
 ## Comportamiento general
 
 - Si la ruta contiene segmentos "." o "..", después de decodificarla, el gateway responde 400 y no reenvía la petición.
+- Si el servicio de destino rechaza la conexión o no responde a tiempo, el gateway responde 503 con un cuerpo RFC 7807 y el detalle "El servicio no está disponible. Intente nuevamente.". El tiempo de espera de respuesta se fija con `spring.cloud.gateway.server.webflux.httpclient.response-timeout`.
 - Las respuestas de las rutas de negocio llevan `X-Correlation-Id`. Si el cliente envía un valor válido, se reutiliza y se propaga a los servicios. Si falta o no cumple el formato, el gateway genera uno nuevo.
 - CORS se configura solo con `CORS_ALLOWED_ORIGINS`. Se aceptan los métodos GET, POST, PUT, PATCH, DELETE y OPTIONS, y los encabezados `Authorization`, `Content-Type` y `X-Correlation-Id`.
 
