@@ -18,9 +18,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Doble de las consultas internas de Fleet, respaldado por WireMock. Modo permisivo: cualquier
- * unidad y conductor existe, y cada conductor invitado está vinculado a su propio usuario. Modo
- * estricto: solo existen los recursos registrados en el escenario; el resto responde 404.
+ * Doble de Fleet respaldado por WireMock. En modo permisivo todo existe; en modo estricto solo
+ * existen los recursos registrados en el escenario y el resto responde 404.
  */
 @Component
 public class FleetStub {
