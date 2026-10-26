@@ -23,4 +23,6 @@ logs/
 
 # Variables de entorno locales (secretos)
 .env
+.env.*
+!.env.example
 

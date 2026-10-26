@@ -1,102 +1,82 @@
-# RINDE Backend
+# RINDE Services
 
-Backend de RINDE by NEXUS: gestión de viajes, gastos, liquidaciones, flota e incidencias para pymes de transporte de carga.
+Monorepo del backend de RINDE by NEXUS. La web, la aplicación móvil y la landing permanecen fuera de este repositorio. La rama develop contiene la migración; main conserva la entrega v0.2.0 hasta el cierre del sprint.
 
-Es un monolito modular en Spring Boot. Cada bounded context tiene su paquete (`iam`, `trip`, `expense`, `settlement`, `fleet`, `incident`, `subscription`, `notification`, `dashboard`) y lo común está en `shared`.
+## Componentes
 
-## Requisitos
+| Carpeta | Artefacto Maven | Versión | Puerto | Base |
+|---|---|---|---|---|
+| libraries/shared-kernel | com.nexus:rinde-shared-kernel | 0.1.0 | No aplica | No aplica |
+| services/iam | com.nexus:rinde-iam-service | 0.1.0 | 8081 | rinde_iam |
+| services/core | com.nexus:rinde-backend | 0.2.0 | 8080 | rinde |
+| services/trip | com.nexus:rinde-trip-service | 0.1.0 | 8082 | rinde_trip |
+| gateway | com.nexus:rinde-gateway | 0.1.0 | 8000 | No aplica |
 
-- JDK 21
-- PostgreSQL 16 o superior
-- RabbitMQ activo en el puerto 5672
+Core conserva los contextos del monolito durante la transición. Fleet y Expense aún deben separarse. Trip ya tiene cliente HTTP y mensajería, pero la asignación necesita los endpoints internos de Fleet. El monorepo no resuelve esa dependencia ni el cierre distribuido pendiente de Settlement.
 
-## Base de datos
+Cada servicio tiene su propio pom.xml, wrapper, configuración, migraciones, pruebas y Dockerfile. Los pom.xml de los componentes no heredan del agregador raíz y sus versiones son independientes. Shared-kernel se consume como dependencia Maven versionada, sin copiar sus fuentes dentro de los servicios. El reactor permite compilar el conjunto sin descargar esa librería de GitHub Packages.
 
-Crea las dos bases en tu PostgreSQL:
+## Trabajo del equipo
 
-```sql
-CREATE DATABASE rinde;
-CREATE DATABASE rinde_test;
+Clonar este repositorio y trabajar desde develop:
+
+```powershell
+git clone https://github.com/nexus-upc/rinde-services.git
+cd rinde-services
+git switch develop
+git pull --ff-only origin develop
+git switch -c feature/fleet-availability
 ```
 
-## Configuración
+Las nuevas implementaciones van aquí: Fleet en services/fleet y Expense en services/expense. Añadir su módulo al agregador al crearlo. Los repositorios separados anteriores se conservan como referencia; no continuar cambios en ambos lugares.
 
-Los datos de conexión y los secretos se leen del archivo `.env` en la raíz del proyecto, que no se sube al repositorio. Copia `.env.example` como `.env` y completa los valores.
+Usar ramas feature/ por tarea, pruebas antes de integrar y merge --no-ff a develop. Main se actualizará mediante una release posterior. No usar squash al integrar historiales. Cada integrante conserva su identidad de Git. Usar tags por componente para las siguientes versiones: iam/vX.Y.Z, trip/vX.Y.Z, core/vX.Y.Z, gateway/vX.Y.Z y shared-kernel/vX.Y.Z. No cambiar los tags históricos v0.1.0 y v0.2.0.
 
-## Ejecutar
+## Compilación y pruebas locales
 
-El webhook de pago simulado usa la variable `RINDE_BILLING_SIMULATION_WEBHOOK_SECRET`, definida en el `.env`. Configura el mismo valor en el entorno de Postman que firme los webhooks.
+Requiere Java 21, PostgreSQL y RabbitMQ. Crear las bases de prueba rinde_test, rinde_iam_test y rinde_trip_test. Cada servicio carga su propio archivo .env: copiar su .env.example dentro de su carpeta y completar los valores. No usar un .env común para las conexiones de distintos servicios.
 
-```
-mvnw.cmd spring-boot:run
-```
-
-Swagger: http://localhost:8080/swagger-ui.html
-
-Pruebas:
-
-```
-mvnw.cmd clean verify
+```powershell
+.\mvnw.cmd clean verify
+.\mvnw.cmd -pl libraries/shared-kernel install
 ```
 
-## Tareas
+El primer comando prueba todos los módulos. El segundo instala la librería para ejecutar o compilar un servicio por separado. Las pruebas de Trip simulan IAM y Fleet con WireMock; los tests de persistencia y mensajería usan PostgreSQL y RabbitMQ reales.
 
-El avance de cada integrante está en [TODO.md](TODO.md).
+Para ejecutar un servicio, entrar en su carpeta:
 
-## Notifications y RabbitMQ (S2-08)
+```powershell
+cd services/iam
+.\mvnw.cmd spring-boot:run
+```
 
-Notifications recibe JSON desde el exchange durable `rinde.events`, con la routing key
-`trip.assigned` y la cola durable `notification.trip-assigned`. El contrato conserva `eventId`,
-`occurredAt`, `tenantId`, `tripId`, `code`, `destination`, `departureDate`, `vehicleId` y `driverId`.
-El consumidor usa un DTO propio y no necesita cargar clases Java del servicio Trip.
+Los README de cada componente conservan sus endpoints y contratos. Para consultar el historial anterior a la migración, usar los commits y repositorios indicados en migration-sources.json. Los archivos originales estaban en la raíz de cada repositorio; git log --all muestra también esos commits originales.
 
-`eventId` identifica el aviso en `notification.retry_store`. Una entrega repetida conserva el
-registro y no vuelve a enviar el aviso. El adaptador push sigue sin proveedor: deja el aviso
-pendiente y aplica las esperas de 1, 2, 4, 8 y 16 minutos. No se presenta como un envío push real.
+## Contenedores
 
-Un fallo al guardar el aviso reintenta el mensaje hasta tres veces; al agotarse queda en
-`notification.trip-assigned.dead`. Un JSON inválido también se conserva en esa cola.
-El listener local se mantiene durante la migración para los viajes que aún se asignen en el monolito.
-Si el mismo evento llega por ambos canales, usa el mismo registro de idempotencia.
+Desde la raíz, con Docker Desktop activo:
 
-La conexión se configura con las variables `RABBITMQ_*` de `.env.example`. Las pruebas de mensajería
-usan colas aisladas con nombres aleatorios y requieren RabbitMQ y `rinde_test` disponibles.
+```powershell
+Copy-Item infra/.env.example .env.compose
+# Completar .env.compose con valores locales.
+docker compose --env-file .env.compose build
+docker compose --env-file .env.compose up -d
+docker compose --env-file .env.compose ps
+docker compose --env-file .env.compose down
+```
 
-## Suscripciones e IAM separado (S2-09)
+La configuración crea una instancia de PostgreSQL y un volumen distintos por servicio, más RabbitMQ. No publica las bases ni el broker al host. Los puertos HTTP se enlazan solo a 127.0.0.1. Cada imagen puede construirse y desplegarse por separado:
 
-Después del commit del pago o del cambio de estado, se publican `subscription.activated` y
-`subscription.suspended` en `rinde.events`. El JSON contiene `eventId`, `occurredAt` y `tenantId`.
-El productor declara también la cola durable `iam.subscription-events` y sus bindings, de modo
-que el mensaje quede guardado aunque IAM aún no haya arrancado. Ambos procesos deben usar los
-mismos valores de `RINDE_EVENTS_EXCHANGE` y `RINDE_IAM_SUBSCRIPTION_QUEUE`.
+```powershell
+docker build -f services/iam/Dockerfile -t rinde/iam:0.1.0 .
+```
 
-Se solicitan confirmaciones del broker y devolución de mensajes sin ruta. Los fallos de conexión
-se reintentan hasta tres veces. Si no se confirma la publicación, el error registra el eventId
-y requiere conciliación: no hay outbox transaccional ni recuperación automática de una caída
-del proceso entre el commit y la publicación. Esa garantía queda fuera del Sprint 2.
+El contexto de build es la raíz del monorepo. El Dockerfile de cada servicio compila shared-kernel como artefacto Maven antes de compilar el servicio. El runtime solo contiene su JAR y corre con usuario sin privilegios. El gateway no requiere shared-kernel.
 
-IAM aplica el mensaje y registra su identificador en su propia base. Notifications y Fleet
-mantienen los eventos locales que ya consumían; no se eliminan contextos del monolito.
-Las pruebas de esta tarea verifican el pago, el contrato del productor, los commits y rollbacks,
-y el consumidor de IAM por separado.
+El acceso a Swagger se mantiene en http://localhost:8000/swagger-ui.html. El checkout usa pago simulado solo si se habilita RINDE_BILLING_SIMULATION_ENABLED; no hay proveedor de pago ni push real. Las imágenes se construyen sin ejecutar pruebas de integración, que deben pasar con el comando local antes de integrar.
 
-## Integración de la web con IAM y suscripciones
+## Historial y versiones
 
-Por defecto, `RINDE_IAM_REMOTE_ENABLED=true` selecciona la fachada HTTP de IAM y
-`IAM_SERVICE_URL` apunta a `http://localhost:8081`. Los contextos del monolito consultan usuarios,
-estado de empresa y correo del administrador por HTTP. No se copian filas de IAM a la base local.
-Si IAM no responde, la API informa 503. El listener local de suscripciones de IAM queda desactivado
-en este modo: la actualización de la empresa llega al servicio separado por RabbitMQ.
+La migración incorpora las ramas publicadas de shared-kernel, IAM, gateway y Trip mediante merges que conservan los commits originales. Los autores, fechas y hashes de esos commits no se modifican. Los tags de origen se incorporan con un prefijo por componente para evitar colisiones; las releases publicadas antes de la migración siguen en sus repositorios de origen.
 
-Para conservar la ejecución histórica del monolito completo puede usarse
-`RINDE_IAM_REMOTE_ENABLED=false`. Las pruebas existentes seleccionan este modo expresamente.
-
-`GET /api/v1/subscriptions/current` consulta la suscripción de la empresa autenticada y devuelve
-204 cuando aún no tiene una. Prioriza la suscripción pendiente de pago frente a una anterior;
-de otro modo elige la de vigencia más reciente. Cada consulta sigue limitada a su empresa.
-
-El checkout agrega `confirmationEnabled`. Solo con `RINDE_BILLING_SIMULATION_ENABLED=true`
-se registra `POST /api/v1/subscriptions/{id}/payments/{paymentId}/simulation`, que recibe
-`{"status":"CONFIRMED"}` o `{"status":"REJECTED"}`. Exige administrador y valida la empresa y la
-suscripción del pago. Reutiliza el procesamiento idempotente del webhook sin entregar su clave
-HMAC a la web. La simulación está desactivada por defecto y debe habilitarse solo para pruebas.
+La publicación de shared-kernel en GitHub Packages sigue pendiente. El reactor y la instalación local permiten desarrollar mientras se habilita ese acceso. No desplegar un servicio nuevo reutilizando las tablas de otro servicio.
