@@ -40,7 +40,7 @@ class GatewaySecurityIntegrationTest extends AbstractGatewayIntegrationTest {
         .jsonPath("$.detail")
         .isEqualTo("Token ausente o inválido.");
 
-    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
+    TRIP.verify(0, anyRequestedFor(anyUrl()));
   }
 
   @Test
@@ -74,7 +74,7 @@ class GatewaySecurityIntegrationTest extends AbstractGatewayIntegrationTest {
         .expectStatus()
         .isUnauthorized();
 
-    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
+    TRIP.verify(0, anyRequestedFor(anyUrl()));
   }
 
   @Test
@@ -127,6 +127,6 @@ class GatewaySecurityIntegrationTest extends AbstractGatewayIntegrationTest {
         .expectStatus()
         .isUnauthorized();
 
-    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
+    TRIP.verify(0, anyRequestedFor(anyUrl()));
   }
 }

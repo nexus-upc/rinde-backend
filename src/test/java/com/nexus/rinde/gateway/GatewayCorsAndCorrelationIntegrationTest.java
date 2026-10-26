@@ -81,7 +81,7 @@ class GatewayCorsAndCorrelationIntegrationTest extends AbstractGatewayIntegratio
 
   @Test
   void propagatesValidCorrelationIdToServicesAndClient() {
-    MONOLITH.stubFor(get(urlEqualTo("/api/v1/trips/123")).willReturn(okJson("{}")));
+    TRIP.stubFor(get(urlEqualTo("/api/v1/trips/123")).willReturn(okJson("{}")));
 
     webTestClient
         .get()
@@ -94,7 +94,7 @@ class GatewayCorsAndCorrelationIntegrationTest extends AbstractGatewayIntegratio
         .expectHeader()
         .valueEquals(CORRELATION, "pedido-2026.10.25_01");
 
-    MONOLITH.verify(
+    TRIP.verify(
         getRequestedFor(urlEqualTo("/api/v1/trips/123"))
             .withHeader(CORRELATION, equalTo("pedido-2026.10.25_01")));
   }

@@ -53,11 +53,19 @@ class GatewayRoutingIntegrationTest extends AbstractGatewayIntegrationTest {
   }
 
   @Test
-  void routesTripsWithValidTokenToMonolithAndForwardsAuthorizationUnchanged() {
+  void routesTripsToTripServiceAndForwardsAuthorizationUnchanged() {
     String token = validToken();
-    MONOLITH.stubFor(
-        get(urlEqualTo("/api/v1/trips/123")).willReturn(okJson("{\"id\":\"123\"}")));
+    TRIP.stubFor(get(urlEqualTo("/api/v1/trips")).willReturn(okJson("[]")));
+    TRIP.stubFor(
+        get(urlEqualTo("/api/v1/trips/123")).willReturn(okJson("{\"tripId\":\"123\"}")));
 
+    webTestClient
+        .get()
+        .uri("/api/v1/trips")
+        .header(AUTHORIZATION, "Bearer " + token)
+        .exchange()
+        .expectStatus()
+        .isOk();
     webTestClient
         .get()
         .uri("/api/v1/trips/123")
@@ -66,13 +74,62 @@ class GatewayRoutingIntegrationTest extends AbstractGatewayIntegrationTest {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.id")
+        .jsonPath("$.tripId")
         .isEqualTo("123");
 
-    MONOLITH.verify(
-        getRequestedFor(urlEqualTo("/api/v1/trips/123"))
+    TRIP.verify(
+        getRequestedFor(urlEqualTo("/api/v1/trips"))
             .withHeader(AUTHORIZATION, equalTo("Bearer " + token)));
+    TRIP.verify(getRequestedFor(urlEqualTo("/api/v1/trips/123")));
+    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
     IAM.verify(0, anyRequestedFor(anyUrl()));
+  }
+
+  @Test
+  void routesTripExpensesAndSettlementToMonolith() {
+    String token = validToken();
+    MONOLITH.stubFor(get(urlEqualTo("/api/v1/trips/123/expenses")).willReturn(okJson("[]")));
+    MONOLITH.stubFor(
+        get(urlEqualTo("/api/v1/trips/123/expenses/456")).willReturn(okJson("{}")));
+    MONOLITH.stubFor(get(urlEqualTo("/api/v1/trips/123/settlement")).willReturn(okJson("{}")));
+
+    for (String path :
+        new String[] {
+          "/api/v1/trips/123/expenses", "/api/v1/trips/123/expenses/456", "/api/v1/trips/123/settlement"
+        }) {
+      webTestClient
+          .get()
+          .uri(path)
+          .header(AUTHORIZATION, "Bearer " + token)
+          .exchange()
+          .expectStatus()
+          .isOk();
+    }
+
+    MONOLITH.verify(
+        getRequestedFor(urlEqualTo("/api/v1/trips/123/expenses"))
+            .withHeader(AUTHORIZATION, equalTo("Bearer " + token)));
+    MONOLITH.verify(getRequestedFor(urlEqualTo("/api/v1/trips/123/expenses/456")));
+    MONOLITH.verify(getRequestedFor(urlEqualTo("/api/v1/trips/123/settlement")));
+    TRIP.verify(0, anyRequestedFor(anyUrl()));
+  }
+
+  @Test
+  void servesTripOpenApiDocsThroughRewrittenRoute() {
+    TRIP.stubFor(get(urlEqualTo("/v3/api-docs")).willReturn(okJson("{\"openapi\":\"3.1.0\"}")));
+
+    webTestClient
+        .get()
+        .uri("/v3/api-docs/trip")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.openapi")
+        .exists();
+
+    TRIP.verify(1, getRequestedFor(urlEqualTo("/v3/api-docs")));
+    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
   }
 
   @Test

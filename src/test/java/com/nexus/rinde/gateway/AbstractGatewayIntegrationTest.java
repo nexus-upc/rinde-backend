@@ -29,10 +29,12 @@ abstract class AbstractGatewayIntegrationTest {
 
   static final WireMockServer IAM = new WireMockServer(wireMockConfig().dynamicPort());
   static final WireMockServer MONOLITH = new WireMockServer(wireMockConfig().dynamicPort());
+  static final WireMockServer TRIP = new WireMockServer(wireMockConfig().dynamicPort());
 
   static {
     IAM.start();
     MONOLITH.start();
+    TRIP.start();
   }
 
   @Autowired WebTestClient webTestClient;
@@ -41,6 +43,7 @@ abstract class AbstractGatewayIntegrationTest {
   static void gatewayProperties(DynamicPropertyRegistry registry) {
     registry.add("IAM_SERVICE_URL", () -> "http://localhost:" + IAM.port());
     registry.add("MONOLITH_URL", () -> "http://localhost:" + MONOLITH.port());
+    registry.add("TRIP_SERVICE_URL", () -> "http://localhost:" + TRIP.port());
     registry.add("JWT_SECRET", () -> TEST_SECRET);
     registry.add("CORS_ALLOWED_ORIGINS", () -> ALLOWED_ORIGIN);
   }
@@ -49,6 +52,7 @@ abstract class AbstractGatewayIntegrationTest {
   void resetStubs() {
     IAM.resetAll();
     MONOLITH.resetAll();
+    TRIP.resetAll();
   }
 
   static String validToken() {
