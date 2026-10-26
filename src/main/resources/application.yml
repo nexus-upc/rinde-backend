@@ -22,11 +22,30 @@ spring:
   # El esquema iam se migra con Flyway desde IamFlywayConfiguration.
   flyway:
     enabled: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        prefetch: 1
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 200ms
+          multiplier: 2
+          max-interval: 2s
 
 server:
   port: 8081
 
 rinde:
+  messaging:
+    exchange: ${RINDE_EVENTS_EXCHANGE:rinde.events}
+    subscription:
+      queue: ${RINDE_IAM_SUBSCRIPTION_QUEUE:iam.subscription-events}
   security:
     jwt:
       # Mínimo 32 caracteres. Debe ser el mismo secreto que usa el monolito para validar los tokens.
