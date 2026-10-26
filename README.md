@@ -18,8 +18,21 @@ Los secretos y los datos de conexión se leen del archivo `.env` en la raíz del
 | `DB_USERNAME` | Usuario de PostgreSQL. |
 | `DB_PASSWORD` | Contraseña de PostgreSQL. |
 | `JWT_SECRET` | Secreto de firma de los tokens. Debe ser el mismo que usa el monolito y tener al menos 32 caracteres. |
+| `WEB_BASE_URL` | URL de la web Angular, por ejemplo `http://localhost:4200`. Es la base de los enlaces de acceso del log. Si no se define, toma ese valor (`rinde.web.base-url`). |
 
 El puerto del servicio es el 8081 (`server.port` en `application.yml`). La vigencia de los enlaces de invitación, verificación y recuperación se configura en `rinde.iam.tokens`.
+
+### Enlaces de acceso para la web
+
+Hasta que Notifications envíe los correos, el servicio registra los enlaces de acceso en el log. En INFO solo aparece el token enmascarado. En DEBUG aparece el enlace completo que usará la web:
+
+| Enlace | Formato |
+| --- | --- |
+| Verificación de la empresa | `{WEB_BASE_URL}/verify-email?tenant={tenantId}&token={token}` |
+| Invitación de usuario | `{WEB_BASE_URL}/accept-invitation?token={token}` |
+| Recuperación de contraseña | `{WEB_BASE_URL}/reset-password?token={token}` |
+
+Para ver los enlaces, activa el nivel DEBUG de la clase que los registra: `logging.level.com.nexus.rinde.iam.application.internal.eventhandlers.AccessTokenLoggingEventHandler=DEBUG`.
 
 ## Base de datos
 
