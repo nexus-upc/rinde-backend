@@ -1,0 +1,58 @@
+{
+  "repository": "https://github.com/nexus-upc/rinde-services",
+  "baseDevelop": "98fc35ceade60574b5ae04c0aca8c4ce744726d3",
+  "unchangedMain": "237155d7a9886d3b6443c4243aec7b94bba7fb98",
+  "sources": [
+    {
+      "repository": "https://github.com/nexus-upc/rinde-shared-kernel",
+      "path": "libraries/shared-kernel",
+      "importedRef": "main",
+      "importedCommit": "8c37c403f4c50595fa68f9ec7f9c57d6baa61877",
+      "main": "8c37c403f4c50595fa68f9ec7f9c57d6baa61877",
+      "develop": "5cf9e2f740cc5302faeeae48f55fb7661d835d4d",
+      "tags": [
+        {
+          "name": "shared-kernel/v0.1.0",
+          "object": "c1931175bc77374a9b5efcaf9a060126165bb3c0"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/nexus-upc/rinde-iam-service",
+      "path": "services/iam",
+      "importedRef": "main",
+      "importedCommit": "326514bc90543606be4c1066ebc00531f23cd6cc",
+      "main": "326514bc90543606be4c1066ebc00531f23cd6cc",
+      "develop": "322b00a748b227910394d209afdbf2f4f3577166",
+      "tags": [
+        {
+          "name": "iam/v0.1.0",
+          "object": "6fec6fb94ac8773b0458efd5bb098c787de53df9"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/nexus-upc/rinde-gateway",
+      "path": "gateway",
+      "importedRef": "main",
+      "importedCommit": "4f5f005643a9dab71a39fb84172f111eab37403b",
+      "main": "4f5f005643a9dab71a39fb84172f111eab37403b",
+      "develop": "0d5f582250b9fa23d8c34850e5111cad87124548",
+      "tags": [
+        {
+          "name": "gateway/v0.1.0",
+          "object": "423da7f5e1c4d433f236920e33bfeb781f425692"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/nexus-upc/rinde-trip-service",
+      "path": "services/trip",
+      "importedRef": "develop",
+      "importedCommit": "c420125eec7d3713dfb38560782266b8fa89aaed",
+      "main": "ad96ad6c7a7d743388227e8143492bd7356096bc",
+      "develop": "c420125eec7d3713dfb38560782266b8fa89aaed",
+      "tags": []
+    }
+  ]
+}
