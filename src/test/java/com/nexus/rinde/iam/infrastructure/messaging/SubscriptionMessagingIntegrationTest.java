@@ -80,17 +80,20 @@ class SubscriptionMessagingIntegrationTest extends AbstractIntegrationTest {
   @Test
   void ignoresTheSameSuspensionAfterALaterReactivation() throws Exception {
     UUID tenant = tenant("20123456789", "ana@andes.pe");
+    UUID other = tenant("20987654321", "otro@andes.pe");
     SubscriptionStatusMessage suspended = event(tenant, Instant.now());
     SubscriptionStatusMessage activated = event(tenant, suspended.occurredAt().plusSeconds(1));
     send("subscription.suspended", suspended);
     send("subscription.activated", activated);
     send("subscription.suspended", suspended);
-    SubscriptionStatusMessage sentinel = event(tenant, activated.occurredAt().plusSeconds(1));
+    SubscriptionStatusMessage sentinel = event(other, activated.occurredAt().plusSeconds(1));
     send("subscription.activated", sentinel);
     awaitReceipt(sentinel.eventId());
 
     assertThat(status(tenant)).isEqualTo("ACTIVE");
     assertThat(receiptCount()).isEqualTo(3);
+    verify(commands, times(1)).handle(any(RestrictTenantCommand.class));
+    assertThat(rabbit.receive(queue() + ".dead", 100)).isNull();
   }
 
   @Test
