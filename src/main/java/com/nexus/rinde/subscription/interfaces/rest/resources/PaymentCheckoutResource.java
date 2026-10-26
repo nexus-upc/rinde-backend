@@ -11,4 +11,5 @@ public record PaymentCheckoutResource(
     String providerReference,
     BigDecimal amount,
     PaymentStatus status,
-    @Schema(description = "Indica que el procesador se simula localmente.") boolean simulated) {}
+    @Schema(description = "Indica que el procesador se simula localmente.") boolean simulated,
+    @Schema(description = "Habilita la confirmación desde la interfaz de pruebas.") boolean confirmationEnabled) {}
