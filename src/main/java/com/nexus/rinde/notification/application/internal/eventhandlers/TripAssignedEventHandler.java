@@ -1,6 +1,7 @@
 package com.nexus.rinde.notification.application.internal.eventhandlers;
 
 import com.nexus.rinde.notification.application.internal.commandservices.TripAssignmentNotificationService;
+import com.nexus.rinde.notification.application.events.TripAssignedNotification;
 import com.nexus.rinde.trip.domain.model.events.TripAssigned;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,9 @@ public class TripAssignedEventHandler {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void on(TripAssigned event) {
     try {
-      notificationService.handle(event);
+      notificationService.handle(new TripAssignedNotification(
+          event.eventId(), event.occurredAt(), event.tenantId(), event.tripId(), event.code(),
+          event.destination(), event.departureDate(), event.vehicleId(), event.driverId()));
     } catch (RuntimeException ex) {
       log.error(
           "No se pudo preparar el aviso para TripAssigned {}. La asignación ya quedó confirmada.",

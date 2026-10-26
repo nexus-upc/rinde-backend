@@ -1,6 +1,7 @@
 package com.nexus.rinde.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 public abstract class AbstractIntegrationTest {
 
+  private static final String NOTIFICATION_QUEUE = "test.notification." + UUID.randomUUID();
+
   @Autowired protected TestDatabase testDatabase;
   @Autowired protected CapturedEvents capturedEvents;
   @Autowired protected MockMvc mockMvc;
@@ -24,6 +27,9 @@ public abstract class AbstractIntegrationTest {
   @DynamicPropertySource
   static void databaseProperties(DynamicPropertyRegistry registry) {
     TestDatabase.registerUrl(registry);
+    registry.add("rinde.messaging.notification.queue", () -> NOTIFICATION_QUEUE);
+    registry.add("rinde.messaging.exchange", () -> NOTIFICATION_QUEUE + ".events");
+    registry.add("spring.rabbitmq.listener.simple.auto-startup", () -> false);
   }
 
   @BeforeEach
