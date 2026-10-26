@@ -16,8 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * API sin sesión, autenticada con JWT. Solo son públicas las rutas de acceso, Swagger y el health.
- * TODO: configurar CORS cuando se conecte el frontend Angular.
+ * API sin sesión, autenticada con JWT. Son públicas las rutas de acceso, Swagger, el health y las
+ * consultas internas. TODO: configurar CORS cuando se conecte el frontend Angular.
  */
 @Configuration
 @EnableMethodSecurity
@@ -41,8 +41,10 @@ public class SecurityConfiguration {
                         "/api/v1/tenants/*/verification",
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/password-reset",
-                        "/api/v1/auth/password",
-                        "/api/v1/billing/webhooks/payment")
+                        "/api/v1/auth/password")
+                    .permitAll()
+                    // Sin JWT: el gateway no enruta /api/internal, solo lo llaman otros servicios.
+                    .requestMatchers(HttpMethod.GET, "/api/internal/v1/**")
                     .permitAll()
                     .requestMatchers(
                         "/actuator/health/**",
