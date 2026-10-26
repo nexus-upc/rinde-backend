@@ -90,7 +90,21 @@ Las respuestas de error siguen el formato `application/problem+json`. Un recurso
 
 ## Eventos
 
-El servicio consume `SubscriptionActivated` y `SubscriptionSuspended` para reactivar o restringir la empresa. Hoy llegan como eventos de Spring. En la tarea S2-09 llegarán por RabbitMQ, y los consumidores ignorarán los eventos repetidos según su identificador.
+El servicio recibe JSON desde el exchange durable `rinde.events`, con las routing keys
+`subscription.activated` y `subscription.suspended`. Ambas llegan a la cola durable
+`iam.subscription-events`, con un consumidor y prefetch de uno. El contrato propio contiene
+`eventId`, `occurredAt` y `tenantId`; no se cargan clases Java del productor.
+
+La migración V2 crea `iam.subscription_event_receipts`. La recepción bloquea la empresa,
+aplica el estado y guarda el identificador del evento en una sola transacción. Los duplicados
+se ignoran incluso después de otro cambio de estado; tampoco se aplica un evento con fecha
+anterior al último recibido para esa empresa. Los eventos no activan empresas pendientes de
+verificar el correo. Se conservan los listeners locales para las pruebas y la transición.
+
+Los fallos se reintentan hasta tres veces. Si falta la empresa o el JSON no es válido, el
+mensaje queda en `iam.subscription-events.dead`, para inspección y reenvío con el mismo eventId
+después de corregir la causa. Las variables `RABBITMQ_*` y `RINDE_IAM_SUBSCRIPTION_QUEUE` están en
+`.env.example`. Las pruebas de mensajería requieren RabbitMQ y usan colas aleatorias aisladas.
 
 ## Estructura
 

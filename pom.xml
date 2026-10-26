@@ -51,6 +51,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.nexus</groupId>
       <artifactId>rinde-shared-kernel</artifactId>
       <version>0.1.0</version>
