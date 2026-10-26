@@ -75,6 +75,14 @@ El contexto de build es la raíz del monorepo. El Dockerfile de cada servicio co
 
 El acceso a Swagger se mantiene en http://localhost:8000/swagger-ui.html. El checkout usa pago simulado solo si se habilita RINDE_BILLING_SIMULATION_ENABLED; no hay proveedor de pago ni push real. Las imágenes se construyen sin ejecutar pruebas de integración, que deben pasar con el comando local antes de integrar.
 
+La prueba de despliegue está dentro del repositorio y requiere PowerShell 7.2 o superior:
+
+```powershell
+pwsh -File tests/deployment/verify.ps1 -Build
+```
+
+Crea un proyecto Compose temporal con credenciales generadas, puertos libres y bases nuevas. Comprueba el arranque, OpenAPI, los límites del gateway, registro, verificación, ingreso, perfil, consulta de suscripción y programación de un viaje. Prepara el hash del token solo en la base efímera para no depender del envío de correo. También comprueba el usuario del runtime y que IAM no copie su empresa a core. Al terminar retira sus contenedores, volúmenes y archivo de secretos temporal; guarda el resultado en tests/deployment/target/result.json, ignorado por Git. No comprueba la asignación a Fleet ni el cierre distribuido pendientes.
+
 ## Historial y versiones
 
 La migración incorpora las ramas publicadas de shared-kernel, IAM, gateway y Trip mediante merges que conservan los commits originales. Los autores, fechas y hashes de esos commits no se modifican. Los tags de origen se incorporan con un prefijo por componente para evitar colisiones; las releases publicadas antes de la migración siguen en sus repositorios de origen.
