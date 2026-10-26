@@ -10,7 +10,7 @@ spring:
       server:
         webflux:
           routes:
-            # Orden explícito: las rutas de IAM van antes que el comodín del monolito.
+            # Orden explícito: las rutas más específicas van antes que los comodines.
             - id: iam-service
               uri: ${IAM_SERVICE_URL:http://localhost:8081}
               order: 1
@@ -36,6 +36,24 @@ spring:
               order: 4
               predicates:
                 - Path=/api/internal/**
+            # Expense y Settlement siguen en el monolito; van antes que el resto de /trips.
+            - id: monolith-trip-children
+              uri: ${MONOLITH_URL:http://localhost:8080}
+              order: 5
+              predicates:
+                - Path=/api/v1/trips/*/expenses/**,/api/v1/trips/*/settlement/**
+            - id: trip-service
+              uri: ${TRIP_SERVICE_URL:http://localhost:8082}
+              order: 6
+              predicates:
+                - Path=/api/v1/trips/**
+            - id: trip-api-docs
+              uri: ${TRIP_SERVICE_URL:http://localhost:8082}
+              order: 7
+              predicates:
+                - Path=/v3/api-docs/trip
+              filters:
+                - RewritePath=/v3/api-docs/trip,/v3/api-docs
             - id: monolith-service
               uri: ${MONOLITH_URL:http://localhost:8080}
               order: 10
@@ -69,6 +87,8 @@ springdoc:
     urls:
       - name: IAM y Tenancy
         url: /v3/api-docs/iam
+      - name: Viajes
+        url: /v3/api-docs/trip
       - name: Monolito
         url: /v3/api-docs/monolith
 
