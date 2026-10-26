@@ -37,6 +37,9 @@ rinde:
       invitation-validity-hours: 48
       password-reset-validity-hours: 1
       email-verification-validity-hours: 48
+  web:
+    # URL del frontend Angular; los enlaces del log de DEBUG apuntan a ella.
+    base-url: ${WEB_BASE_URL:http://localhost:4200}
 
 springdoc:
   api-docs:

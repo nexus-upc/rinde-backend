@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 
 class AccessTokenLoggingEventHandlerTest {
 
-  private final AccessTokenLoggingEventHandler handler = new AccessTokenLoggingEventHandler();
+  private static final String BASE_URL = "http://localhost:4200";
+
+  private final AccessTokenLoggingEventHandler handler =
+      new AccessTokenLoggingEventHandler(BASE_URL);
   private final ListAppender<ILoggingEvent> appender = new ListAppender<>();
   private final Logger logger =
       (Logger) LoggerFactory.getLogger(AccessTokenLoggingEventHandler.class);
@@ -54,10 +57,14 @@ class AccessTokenLoggingEventHandlerTest {
   }
 
   private TenantRegistered tenantRegistered(String verificationToken) {
+    return tenantRegistered(UUID.randomUUID(), verificationToken);
+  }
+
+  private TenantRegistered tenantRegistered(UUID tenantId, String verificationToken) {
     return new TenantRegistered(
         UUID.randomUUID(),
         Instant.now(),
-        UUID.randomUUID(),
+        tenantId,
         "Andes",
         "ana@andes.pe",
         verificationToken,
@@ -173,5 +180,68 @@ class AccessTokenLoggingEventHandlerTest {
     handler.on(userInvited(null));
 
     assertThat(messageAt(Level.INFO)).contains("luis@andes.pe").contains("null");
+  }
+
+  @Test
+  void debugLogsTheWebVerificationLink() {
+    logger.setLevel(Level.DEBUG);
+    UUID tenantId = UUID.randomUUID();
+
+    handler.on(tenantRegistered(tenantId, "token-verificacion"));
+
+    assertThat(messageAt(Level.DEBUG))
+        .contains(
+            BASE_URL + "/verify-email?tenant=" + tenantId + "&token=token-verificacion");
+  }
+
+  @Test
+  void debugLogsTheWebInvitationLink() {
+    logger.setLevel(Level.DEBUG);
+
+    handler.on(userInvited("token-invitacion"));
+
+    assertThat(messageAt(Level.DEBUG))
+        .contains(BASE_URL + "/accept-invitation?token=token-invitacion");
+  }
+
+  @Test
+  void debugLogsTheWebResetLink() {
+    logger.setLevel(Level.DEBUG);
+
+    handler.on(passwordResetRequested("token-recuperacion"));
+
+    assertThat(messageAt(Level.DEBUG))
+        .contains(BASE_URL + "/reset-password?token=token-recuperacion");
+  }
+
+  @Test
+  void infoNeverShowsAWebLink() {
+    logger.setLevel(Level.INFO);
+
+    handler.on(tenantRegistered("token-verificacion"));
+    handler.on(userInvited("token-invitacion"));
+    handler.on(passwordResetRequested("token-recuperacion"));
+
+    assertThat(appender.list)
+        .allSatisfy(
+            event ->
+                assertThat(event.getFormattedMessage())
+                    .doesNotContain(BASE_URL)
+                    .doesNotContain("verify-email")
+                    .doesNotContain("accept-invitation")
+                    .doesNotContain("reset-password"));
+  }
+
+  @Test
+  void aTrailingSlashInTheBaseUrlIsNotDuplicated() {
+    logger.setLevel(Level.DEBUG);
+    AccessTokenLoggingEventHandler withSlash =
+        new AccessTokenLoggingEventHandler(BASE_URL + "/");
+
+    withSlash.on(passwordResetRequested("token-recuperacion"));
+
+    assertThat(messageAt(Level.DEBUG))
+        .contains(BASE_URL + "/reset-password?token=token-recuperacion")
+        .doesNotContain("//reset-password");
   }
 }
