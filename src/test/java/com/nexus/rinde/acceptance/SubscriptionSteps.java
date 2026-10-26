@@ -15,6 +15,7 @@ import com.nexus.rinde.subscription.infrastructure.persistence.jpa.repositories.
 import com.nexus.rinde.subscription.infrastructure.persistence.jpa.repositories.SubscriptionRepository;
 import com.nexus.rinde.support.ExpenseApi;
 import com.nexus.rinde.support.FleetApi;
+import com.nexus.rinde.support.RelativeDates;
 import com.nexus.rinde.support.SubscriptionApi;
 import com.nexus.rinde.support.TripApi;
 import io.cucumber.java.es.Cuando;
@@ -203,7 +204,7 @@ public class SubscriptionSteps {
             new Plan("Plan-Consulta-Prueba", new BigDecimal("37.50"), 5, true));
     UUID subscriptionId = UUID.randomUUID();
     UUID tenantId = UUID.fromString(context.tenantIdOf(TENANT_RUC));
-    Instant expiresAt = Instant.parse(expiration);
+    Instant expiresAt = RelativeDates.instant(expiration);
     Instant startsAt = expiresAt.minus(30, ChronoUnit.DAYS);
     LocalDateTime expiresAtUtc = LocalDateTime.ofInstant(expiresAt, ZoneOffset.UTC);
     LocalDateTime startsAtUtc = LocalDateTime.ofInstant(startsAt, ZoneOffset.UTC);
@@ -234,7 +235,7 @@ public class SubscriptionSteps {
   @Y("la suscripción consultada vence en {string}")
   public void queriedSubscriptionExpiresAt(String expiration) throws Exception {
     assertThat(Instant.parse(context.body().get("expiresAt").asText()))
-        .isEqualTo(Instant.parse(expiration));
+        .isEqualTo(RelativeDates.instant(expiration));
   }
 
   @Cuando("el administrador inicia el checkout simulado de la suscripción creada")

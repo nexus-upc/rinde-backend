@@ -11,12 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * Reacciona a los eventos de Subscriptions & Billing: reactiva o restringe la empresa. Los comandos
  * son idempotentes, así que un evento repetido no cambia el resultado (CRN-08).
  */
 @Component
+@ConditionalOnProperty(name = "rinde.iam.remote-enabled", havingValue = "false", matchIfMissing = true)
 public class SubscriptionEventHandler {
 
   private static final Logger log = LoggerFactory.getLogger(SubscriptionEventHandler.class);

@@ -22,11 +22,42 @@ spring:
   # Cada bounded context declara su propio Flyway (esquema y migraciones propios).
   flyway:
     enabled: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-interval: 200ms
+        multiplier: 2
+        max-interval: 2s
+    listener:
+      simple:
+        prefetch: 1
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 200ms
+          multiplier: 2
+          max-interval: 2s
 
 server:
   port: 8080
 
 rinde:
+  messaging:
+    exchange: ${RINDE_EVENTS_EXCHANGE:rinde.events}
+    notification:
+      queue: ${RINDE_NOTIFICATION_QUEUE:notification.trip-assigned}
+    subscription:
+      queue: ${RINDE_IAM_SUBSCRIPTION_QUEUE:iam.subscription-events}
   security:
     jwt:
       # Mínimo 32 caracteres.
@@ -34,8 +65,11 @@ rinde:
       expiration-hours: 8
   billing:
     simulation:
+      enabled: ${RINDE_BILLING_SIMULATION_ENABLED:false}
       webhook-secret: ${RINDE_BILLING_SIMULATION_WEBHOOK_SECRET}
   iam:
+    remote-enabled: ${RINDE_IAM_REMOTE_ENABLED:true}
+    base-url: ${IAM_SERVICE_URL:http://localhost:8081}
     tokens:
       invitation-validity-hours: 48
       password-reset-validity-hours: 1

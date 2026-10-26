@@ -9,19 +9,19 @@ Característica: US14 Programar viajes
     Y que el administrador "ana@andes.pe" inició sesión
 
   Escenario: Programar un viaje para una fecha futura
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Entonces la respuesta tiene código 201
     Y el viaje queda en estado "SCHEDULED"
     Y la respuesta incluye el campo "code" con el valor "TRP-000001"
 
   Escenario: Programar un viaje con peso opcional
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Cusco" con carga "Muebles", peso "850.25" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Cusco" con carga "Muebles", peso "850.25" y salida "HOY+5"
     Entonces la respuesta tiene código 201
     Y el peso de la carga es "850.25"
 
   Escenario: El código correlativo avanza por empresa
-    Cuando el administrador programa el viaje "primero" de "Lima" a "Ica" con carga "Cajas" y salida "2026-10-20"
-    Y el administrador programa el viaje "segundo" de "Lima" a "Ica" con carga "Cajas" y salida "2026-10-21"
+    Cuando el administrador programa el viaje "primero" de "Lima" a "Ica" con carga "Cajas" y salida "HOY+5"
+    Y el administrador programa el viaje "segundo" de "Lima" a "Ica" con carga "Cajas" y salida "HOY+6"
     Entonces la respuesta tiene código 201
     Y la respuesta incluye el campo "code" con el valor "TRP-000002"
 
@@ -34,12 +34,12 @@ Característica: US14 Programar viajes
     Entonces la respuesta tiene código 400
 
   Escenario: Una fecha pasada requiere confirmación
-    Cuando el administrador programa el viaje "viaje" con salida pasada "2026-10-01"
+    Cuando el administrador programa el viaje "viaje" con salida pasada "HOY-10"
     Entonces la respuesta tiene código 409
     Y el mensaje de error es "La fecha de salida es anterior a hoy. Confirme que se trata de un viaje ya ejecutado."
 
   Escenario: Programar un viaje ejecutado tras confirmar la fecha pasada
-    Cuando el administrador confirma la fecha pasada y programa el viaje "viaje" para "2026-10-01"
+    Cuando el administrador confirma la fecha pasada y programa el viaje "viaje" para "HOY-10"
     Entonces la respuesta tiene código 201
     Y el viaje queda en estado "SCHEDULED"
 

@@ -13,7 +13,7 @@
 
   <groupId>com.nexus</groupId>
   <artifactId>rinde-backend</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <name>rinde-backend</name>
   <description>Backend de RINDE by NEXUS: monolito modular con un paquete por bounded context</description>
 
@@ -40,6 +40,10 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-amqp</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -95,6 +99,11 @@
       <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>com.nexus</groupId>
+      <artifactId>rinde-shared-kernel</artifactId>
+      <version>0.1.0</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -127,6 +136,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/nexus-upc/rinde-shared-kernel</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>

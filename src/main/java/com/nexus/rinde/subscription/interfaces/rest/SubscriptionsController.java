@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import com.nexus.rinde.subscription.domain.model.queries.GetCurrentSubscriptionQuery;
 
 /** Endpoints del catálogo compartido y las suscripciones por empresa. */
 @RestController
@@ -47,14 +49,17 @@ public class SubscriptionsController {
   private final SubscriptionCommandService commandService;
   private final SubscriptionQueryService queryService;
   private final PaymentCommandService paymentCommandService;
+  private final boolean simulationEnabled;
 
   public SubscriptionsController(
       SubscriptionCommandService commandService,
       SubscriptionQueryService queryService,
-      PaymentCommandService paymentCommandService) {
+      PaymentCommandService paymentCommandService,
+      @Value("${rinde.billing.simulation.enabled:false}") boolean simulationEnabled) {
     this.commandService = commandService;
     this.queryService = queryService;
     this.paymentCommandService = paymentCommandService;
+    this.simulationEnabled = simulationEnabled;
   }
 
   @GetMapping("/plans")
@@ -185,7 +190,16 @@ public class SubscriptionsController {
                 checkout.providerReference(),
                 checkout.amount(),
                 checkout.status(),
-                checkout.simulated()));
+                checkout.simulated(), simulationEnabled));
+  }
+
+  @GetMapping("/subscriptions/current")
+  @PreAuthorize("isAuthenticated()")
+  @Operation(summary = "Consultar la suscripción actual de la empresa; 204 si aún no tiene una")
+  public ResponseEntity<SubscriptionResource> currentSubscription() {
+    return queryService.handle(new GetCurrentSubscriptionQuery(TenantContext.tenantId()))
+        .map(details -> ResponseEntity.ok(SubscriptionResourceFromDetailsAssembler.toResource(details)))
+        .orElseGet(() -> ResponseEntity.noContent().build());
   }
 
   @GetMapping("/subscriptions/{id}")

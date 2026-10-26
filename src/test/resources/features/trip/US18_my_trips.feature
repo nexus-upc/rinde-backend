@@ -13,9 +13,9 @@ Característica: US18 Consultar mis viajes asignados
     Y que existe el vehículo "camión dos"
 
   Escenario: Listar los viajes propios ordenados por fecha
-    Cuando el administrador programa el viaje "más tarde" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-21"
+    Cuando el administrador programa el viaje "más tarde" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+6"
     Y el administrador asigna el viaje "más tarde" al vehículo "camión uno" y al conductor "luis@andes.pe"
-    Y el administrador programa el viaje "más temprano" de "Lima" a "Cusco" con carga "Muebles" y salida "2026-10-20"
+    Y el administrador programa el viaje "más temprano" de "Lima" a "Cusco" con carga "Muebles" y salida "HOY+5"
     Y el administrador asigna el viaje "más temprano" al vehículo "camión dos" y al conductor "luis@andes.pe"
     Cuando el conductor "luis@andes.pe" consulta sus viajes asignados
     Entonces la respuesta tiene código 200
@@ -28,7 +28,7 @@ Característica: US18 Consultar mis viajes asignados
     Y la lista está vacía
 
   Escenario: El conductor solo ve los viajes de su empresa
-    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "2026-10-20"
+    Cuando el administrador programa el viaje "viaje" de "Lima" a "Arequipa" con carga "Repuestos" y salida "HOY+5"
     Y el administrador asigna el viaje "viaje" al vehículo "camión uno" y al conductor "luis@andes.pe"
     Dado que existe una empresa verificada con RUC "20987654321" y administrador "otro@otra.pe"
     Y que el administrador "otro@otra.pe" inició sesión

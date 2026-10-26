@@ -7,6 +7,7 @@ import com.nexus.rinde.subscription.domain.model.aggregates.Plan;
 import com.nexus.rinde.subscription.domain.model.aggregates.Subscription;
 import com.nexus.rinde.subscription.domain.model.commands.ProcessPaymentWebhookCommand;
 import com.nexus.rinde.subscription.domain.model.commands.StartSubscriptionCheckoutCommand;
+import com.nexus.rinde.subscription.domain.model.commands.SimulatePaymentCommand;
 import com.nexus.rinde.subscription.domain.model.valueobjects.PaymentCheckout;
 import com.nexus.rinde.subscription.domain.model.valueobjects.PaymentGatewaySession;
 import com.nexus.rinde.subscription.domain.model.valueobjects.PaymentStatus;
@@ -93,6 +94,18 @@ public class SubscriptionPaymentCommandServiceImpl implements PaymentCommandServ
                 plan.getMonthlyPrice(),
                 clock.instant()));
     return toCheckout(payment, true);
+  }
+
+  @Override
+  @Transactional
+  public PaymentWebhookResult handle(SimulatePaymentCommand command) {
+    var payment = paymentRepository.findById(command.paymentId())
+        .filter(value -> command.tenantId().equals(value.getTenantId())
+            && command.subscriptionId().equals(value.getSubscriptionId()))
+        .orElseThrow(() -> new ResourceNotFoundException("El intento de pago no existe en su empresa."));
+    return handle(new ProcessPaymentWebhookCommand("simulation:" + command.paymentId(),
+        payment.getProviderReference(), command.status(), payment.getAmount().toPlainString(),
+        command.status() == PaymentStatus.REJECTED ? "El pago de prueba fue rechazado." : null));
   }
 
   @Override

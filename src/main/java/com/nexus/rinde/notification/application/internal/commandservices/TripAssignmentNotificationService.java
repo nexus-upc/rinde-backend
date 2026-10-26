@@ -6,7 +6,7 @@ import com.nexus.rinde.notification.domain.services.PushAdapter;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.entities.RetryStoreEntry;
 import com.nexus.rinde.notification.infrastructure.persistence.jpa.repositories.RetryStoreRepository;
 import com.nexus.rinde.notification.infrastructure.services.PushAdapterUnavailableException;
-import com.nexus.rinde.trip.domain.model.events.TripAssigned;
+import com.nexus.rinde.notification.application.events.TripAssignedNotification;
 import java.time.Clock;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class TripAssignmentNotificationService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void handle(TripAssigned event) {
+  public void handle(TripAssignedNotification event) {
     if (retryStoreRepository.existsById(event.eventId())) {
       return;
     }

@@ -15,6 +15,9 @@ import com.nexus.rinde.subscription.infrastructure.persistence.jpa.repositories.
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.PageRequest;
+import com.nexus.rinde.subscription.domain.model.queries.GetCurrentSubscriptionQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,15 @@ public class SubscriptionQueryServiceImpl implements SubscriptionQueryService {
   @Transactional(readOnly = true)
   public List<Plan> handle(ListActivePlansQuery query) {
     return planRepository.findByActiveTrueOrderByNameAsc();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<SubscriptionDetails> handle(GetCurrentSubscriptionQuery query) {
+    return subscriptionRepository.findCurrentCandidates(
+        query.tenantId(), SubscriptionStatus.PENDING_PAYMENT, PageRequest.of(0, 1)).stream()
+        .findFirst().map(subscription -> handle(new GetSubscriptionByTenantQuery(
+            query.tenantId(), subscription.getSubscriptionId())));
   }
 
   @Override

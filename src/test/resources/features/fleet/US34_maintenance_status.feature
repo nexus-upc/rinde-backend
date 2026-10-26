@@ -16,21 +16,21 @@ Característica: US34 Consultar estado de mantenimiento y elegibilidad de recurs
     Y el vehículo está disponible para viaje
 
   Escenario: Alerta de mantenimiento próximo a vencer
-    Dado que se registra un mantenimiento "PREVENTIVO" para el vehículo "camion" con ejecución "2026-10-01", costo "450.00" y próximo mantenimiento "2026-10-10"
+    Dado que se registra un mantenimiento "PREVENTIVO" para el vehículo "camion" con ejecución "HOY-7", costo "450.00" y próximo mantenimiento "HOY+3"
     Cuando el administrador consulta el estado de salud del vehículo "camion"
     Entonces la respuesta tiene código 200
     Y el estado de mantenimiento es "DUE_SOON"
     Y el vehículo está disponible para viaje
 
   Escenario: Alerta de mantenimiento vencido bloquea disponibilidad normal
-    Dado que se registra un mantenimiento "CORRECTIVO" para el vehículo "camion" con ejecución "2026-08-01", costo "900.00" y próximo mantenimiento "2026-09-01"
+    Dado que se registra un mantenimiento "CORRECTIVO" para el vehículo "camion" con ejecución "HOY-61", costo "900.00" y próximo mantenimiento "HOY-30"
     Cuando el administrador consulta el estado de salud del vehículo "camion"
     Entonces la respuesta tiene código 200
     Y el estado de mantenimiento es "OVERDUE"
     Y el vehículo no está disponible para viaje
 
   Escenario: Listar alertas de mantenimiento para unidades que requieren servicio
-    Dado que se registra un mantenimiento "PREVENTIVO" para el vehículo "camion" con ejecución "2026-10-01", costo "450.00" y próximo mantenimiento "2026-10-10"
+    Dado que se registra un mantenimiento "PREVENTIVO" para el vehículo "camion" con ejecución "HOY-7", costo "450.00" y próximo mantenimiento "HOY+3"
     Cuando el administrador consulta las alertas de mantenimiento
     Entonces la respuesta tiene código 200
     Y la lista de alertas contiene al menos 1 elemento
