@@ -7,10 +7,10 @@ Monorepo del backend de RINDE by NEXUS. La web, la aplicación móvil y la landi
 | Carpeta | Artefacto Maven | Versión | Puerto | Base |
 |---|---|---|---|---|
 | libraries/shared-kernel | com.nexus:rinde-shared-kernel | 0.2.0 | No aplica | No aplica |
-| services/iam | com.nexus:rinde-iam-service | 0.2.0 | 8081 | rinde_iam |
+| services/iam | com.nexus:rinde-iam-service | 0.3.0 | 8081 | rinde_iam |
 | services/core | com.nexus:rinde-backend | 0.3.0 | 8080 | rinde |
 | services/trip | com.nexus:rinde-trip-service | 0.2.0 | 8082 | rinde_trip |
-| gateway | com.nexus:rinde-gateway | 0.2.0 | 8000 | No aplica |
+| gateway | com.nexus:rinde-gateway | 0.3.0 | 8000 | No aplica |
 
 Core conserva los contextos del monolito durante la transición. Fleet y Expense aún deben separarse. Trip usa el contrato HTTP real de Fleet, expuesto temporalmente desde core. Se comprobó asignación, inicio, fin y actualización de la unidad por RabbitMQ. La extracción de Fleet sigue pendiente. El monorepo no resuelve esa dependencia ni el cierre distribuido pendiente de Settlement.
 
@@ -68,7 +68,7 @@ docker compose --env-file .env.compose down
 La configuración crea una instancia de PostgreSQL y un volumen distintos por servicio, más RabbitMQ. No publica las bases ni el broker al host. Los puertos HTTP se enlazan solo a 127.0.0.1. Cada imagen puede construirse y desplegarse por separado:
 
 ```powershell
-docker build -f services/iam/Dockerfile -t rinde/iam:0.2.0 .
+docker build -f services/iam/Dockerfile -t rinde/iam:0.3.0 .
 ```
 
 El contexto de build es la raíz del monorepo. El Dockerfile de cada servicio compila shared-kernel como artefacto Maven antes de compilar el servicio. El runtime solo contiene su JAR y corre con usuario sin privilegios. El gateway no requiere shared-kernel.
@@ -102,6 +102,14 @@ La suspensión administrativa se conserva por separado del estado comercial de l
 Los precios y límites de los planes existentes no se editan. Para cambiar la oferta se crea otro plan y se retira el anterior, conservando las condiciones de las suscripciones que ya lo referencian. Los pagos continúan simulados: el panel no inicia cobros bancarios.
 
 La auditoría de identidad está en IAM; la del catálogo, en core. Las consultas globales de suscripción obtienen los nombres por HTTP desde IAM, sin leer sus tablas. Las pruebas negativas cubren rutas y credenciales en ambos sentidos, y el script de despliegue prueba el flujo entre procesos.
+
+## Buzón de demostración
+
+IAM puede guardar en su propia base los mensajes de verificación de empresa, invitación y recuperación de contraseña, para completar esos flujos sin un proveedor de correo. El dueño los consulta en /platform/mailbox de la web y en GET /api/v1/platform/demo-mailbox/messages. Solo acepta un token PLATFORM_OWNER; una cuenta de empresa o una visita anónima no obtiene mensajes ni enlaces. GET /api/v1/demo/features es público y solo informa si el modo está habilitado.
+
+El mensaje se registra en la misma transacción que crea el enlace, con un mensaje como máximo por evento. La migración V4 de IAM crea iam.demo_mail_messages. El token se guarda cifrado con AES-GCM. El listado no devuelve tokens ni enlaces, y el detalle solo ofrece la acción mientras el enlace sigue vigente y sin usar.
+
+RINDE_DEMO_MAILBOX_ENABLED está en false por defecto. Para habilitarlo se requiere RINDE_DEMO_MAILBOX_ENCRYPTION_KEY con 64 caracteres hexadecimales, distinta de los secretos JWT. IAM no arranca con el buzón habilitado en los perfiles prod o production. No hay entrega por SMTP ni por un proveedor externo: los mensajes del buzón no son correos enviados.
 
 ## Librería publicada
 
