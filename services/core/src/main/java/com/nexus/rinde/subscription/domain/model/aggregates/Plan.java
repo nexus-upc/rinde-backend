@@ -35,7 +35,8 @@ public class Plan {
     this(UUID.randomUUID(), name, monthlyPrice, unitLimit, active);
   }
 
-  public Plan(UUID planId, String name, BigDecimal monthlyPrice, Integer unitLimit, boolean active) {
+  public Plan(
+      UUID planId, String name, BigDecimal monthlyPrice, Integer unitLimit, boolean active) {
     if (planId == null) {
       throw new BusinessRuleException("El identificador del plan es obligatorio.");
     }
@@ -69,6 +70,10 @@ public class Plan {
 
   public Integer getUnitLimit() {
     return unitLimit;
+  }
+
+  public void changeAvailability(boolean active) {
+    this.active = active;
   }
 
   public boolean isActive() {
