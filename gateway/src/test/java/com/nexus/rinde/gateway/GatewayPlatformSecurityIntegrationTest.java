@@ -52,6 +52,44 @@ class GatewayPlatformSecurityIntegrationTest extends AbstractGatewayIntegrationT
   }
 
   @Test
+  void exposesOnlyTheCapabilityPubliclyAndRoutesTheMailboxOnlyForTheOwner() {
+    IAM.stubFor(get("/api/v1/demo/features").willReturn(okJson("{\"mailboxEnabled\":true}")));
+    IAM.stubFor(
+        get("/api/v1/platform/demo-mailbox/messages")
+            .willReturn(okJson("{\"items\":[],\"total\":0}")));
+    webTestClient
+        .get()
+        .uri("/api/v1/demo/features")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.mailboxEnabled")
+        .isEqualTo(true);
+    webTestClient
+        .get()
+        .uri("/api/v1/platform/demo-mailbox/messages")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized();
+    webTestClient
+        .get()
+        .uri("/api/v1/platform/demo-mailbox/messages")
+        .headers(h -> h.setBearerAuth(validToken()))
+        .exchange()
+        .expectStatus()
+        .isForbidden();
+    webTestClient
+        .get()
+        .uri("/api/v1/platform/demo-mailbox/messages")
+        .headers(h -> h.setBearerAuth(owner()))
+        .exchange()
+        .expectStatus()
+        .isOk();
+    IAM.verify(1, getRequestedFor(urlEqualTo("/api/v1/platform/demo-mailbox/messages")));
+  }
+
+  @Test
   void refusesPlatformTokensAtTheTenantBoundary() {
     webTestClient
         .get()

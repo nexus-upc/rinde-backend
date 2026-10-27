@@ -42,6 +42,10 @@ server:
   port: 8081
 
 rinde:
+  demo:
+    mailbox:
+      enabled: ${RINDE_DEMO_MAILBOX_ENABLED:false}
+      encryption-key: ${RINDE_DEMO_MAILBOX_ENCRYPTION_KEY:}
   platform:
     jwt:
       secret: ${RINDE_PLATFORM_JWT_SECRET:}
