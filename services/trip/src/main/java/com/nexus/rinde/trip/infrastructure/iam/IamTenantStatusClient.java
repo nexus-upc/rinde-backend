@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClientException;
 
 /**
  * Consulta a IAM el estado actual de la empresa, para que una suscripción vencida se aplique sin
- * esperar a que expire el token. Si IAM no responde, se usa el estado que trae el token.
+ * esperar a que expire el token. Si IAM no responde, se informa indisponibilidad.
  */
 @Component
 public class IamTenantStatusClient implements TenantStatusProvider {
@@ -33,7 +33,8 @@ public class IamTenantStatusClient implements TenantStatusProvider {
             ClientHttpRequestFactorySettings.DEFAULTS
                 .withConnectTimeout(Duration.ofSeconds(1))
                 .withReadTimeout(Duration.ofSeconds(2)));
-    this.restClient = RestClient.builder().baseUrl(serviceUrl).requestFactory(requestFactory).build();
+    this.restClient =
+        RestClient.builder().baseUrl(serviceUrl).requestFactory(requestFactory).build();
   }
 
   @Override
@@ -43,10 +44,14 @@ public class IamTenantStatusClient implements TenantStatusProvider {
           restClient.get().uri(STATUS_PATH, tenantId).retrieve().body(TenantStatusResponse.class);
       return Optional.ofNullable(response).map(TenantStatusResponse::status);
     } catch (HttpClientErrorException.NotFound ex) {
-      return Optional.empty();
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,
+          "No se pudo comprobar el estado actual de la empresa.");
     } catch (RestClientException ex) {
-      log.warn("IAM no respondió el estado de la empresa; se usa el estado del token.");
-      return Optional.empty();
+      log.warn("IAM no respondió el estado actual de la empresa.");
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,
+          "No se pudo comprobar el estado actual de la empresa.");
     }
   }
 

@@ -39,6 +39,9 @@ public class Tenant extends AuditableAbstractAggregateRoot {
   @Column(name = "status", nullable = false, length = 30)
   private TenantStatus status;
 
+  @Column(name = "access_suspended", nullable = false)
+  private boolean accessSuspended;
+
   protected Tenant() {}
 
   public Tenant(String tradeName, Ruc ruc) {
@@ -109,7 +112,19 @@ public class Tenant extends AuditableAbstractAggregateRoot {
     return ruc;
   }
 
-  public TenantStatus getStatus() {
+  public boolean isAccessSuspended() {
+    return accessSuspended;
+  }
+
+  public void changePlatformAccess(boolean suspended) {
+    this.accessSuspended = suspended;
+  }
+
+  public TenantStatus getSubscriptionStatus() {
     return status;
+  }
+
+  public TenantStatus getStatus() {
+    return accessSuspended ? TenantStatus.SUSPENDED : status;
   }
 }

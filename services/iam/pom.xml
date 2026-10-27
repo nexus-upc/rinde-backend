@@ -13,7 +13,7 @@
 
   <groupId>com.nexus</groupId>
   <artifactId>rinde-iam-service</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <name>rinde-iam-service</name>
   <description>Servicio de IAM &amp; Tenancy de RINDE by NEXUS: empresas, usuarios y acceso</description>
 
@@ -30,7 +30,7 @@
   <repositories>
     <repository>
       <id>github</id>
-      <url>https://maven.pkg.github.com/nexus-upc/rinde-shared-kernel</url>
+      <url>https://maven.pkg.github.com/nexus-upc/rinde-services</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>com.nexus</groupId>
       <artifactId>rinde-shared-kernel</artifactId>
-      <version>0.1.0</version>
+      <version>0.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

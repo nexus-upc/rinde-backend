@@ -16,6 +16,7 @@ public class AnonymousRequestMatcher {
 
   private static final List<Rule> RULES =
       List.of(
+          new Rule(HttpMethod.POST, "/api/v1/platform/auth/sign-in"),
           new Rule(HttpMethod.POST, "/api/v1/tenants"),
           new Rule(HttpMethod.POST, "/api/v1/tenants/*/verification"),
           new Rule(HttpMethod.POST, "/api/v1/auth/sign-in"),
