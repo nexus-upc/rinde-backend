@@ -125,6 +125,10 @@ public class Tenant extends AuditableAbstractAggregateRoot {
   }
 
   public TenantStatus getStatus() {
+    return status;
+  }
+
+  public TenantStatus getAccessStatus() {
     return accessSuspended ? TenantStatus.SUSPENDED : status;
   }
 }
