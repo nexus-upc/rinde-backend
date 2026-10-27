@@ -19,7 +19,7 @@ spring:
               uri: ${IAM_SERVICE_URL:http://localhost:8081}
               order: 0
               predicates:
-                - Path=/api/v1/platform/auth/**,/api/v1/platform/me,/api/v1/platform/overview,/api/v1/platform/companies/**,/api/v1/platform/audit/identity
+                - Path=/api/v1/platform/auth/**,/api/v1/platform/me,/api/v1/platform/overview,/api/v1/platform/companies/**,/api/v1/platform/audit/identity,/api/v1/platform/demo-mailbox/**
             - id: platform-billing
               uri: ${MONOLITH_URL:http://localhost:8080}
               order: 1
@@ -29,7 +29,7 @@ spring:
               uri: ${IAM_SERVICE_URL:http://localhost:8081}
               order: 1
               predicates:
-                - Path=/api/v1/auth/**,/api/v1/tenants/**,/api/v1/users/**
+                - Path=/api/v1/auth/**,/api/v1/tenants/**,/api/v1/users/**,/api/v1/demo/features
             - id: iam-api-docs
               uri: ${IAM_SERVICE_URL:http://localhost:8081}
               order: 2

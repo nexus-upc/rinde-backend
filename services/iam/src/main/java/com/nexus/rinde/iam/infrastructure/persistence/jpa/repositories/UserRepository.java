@@ -22,6 +22,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   List<User> findByTenantId(TenantId tenantId);
 
   /** Los enlaces llegan sin correo ni empresa, por eso se buscan por su hash (único). */
+  @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+  @org.springframework.transaction.annotation.Transactional
   @Query("select u from User u join u.accessTokens t where t.value = :tokenHash")
   Optional<User> findByAccessTokenHash(@Param("tokenHash") String tokenHash);
 }

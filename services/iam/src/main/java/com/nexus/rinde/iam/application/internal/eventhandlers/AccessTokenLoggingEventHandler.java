@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
  * web. TODO: eliminar cuando Notifications envíe los correos con estos eventos.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "rinde.demo.mailbox.enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class AccessTokenLoggingEventHandler {
 
   private static final Logger log = LoggerFactory.getLogger(AccessTokenLoggingEventHandler.class);
@@ -44,8 +48,7 @@ public class AccessTokenLoggingEventHandler {
 
   @EventListener
   public void on(UserInvited event) {
-    log.info(
-        "Token de invitación para {}: {}", event.email(), mask(event.invitationToken()));
+    log.info("Token de invitación para {}: {}", event.email(), mask(event.invitationToken()));
     log.debug(
         "Enlace de invitación para {}: {}",
         event.email(),

@@ -64,7 +64,7 @@ services:
     volumes:
       - postgres-iam-data:/var/lib/postgresql/data
   iam:
-    image: rinde/iam:${IAM_VERSION:-0.2.0}
+    image: rinde/iam:${IAM_VERSION:-0.3.0}
     build:
       context: .
       dockerfile: services/iam/Dockerfile
@@ -78,6 +78,8 @@ services:
       RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:?Configurar RABBITMQ_USERNAME}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Configurar RABBITMQ_PASSWORD}
       WEB_BASE_URL: ${WEB_BASE_URL:-http://localhost:4200}
+      RINDE_DEMO_MAILBOX_ENABLED: ${RINDE_DEMO_MAILBOX_ENABLED:-false}
+      RINDE_DEMO_MAILBOX_ENCRYPTION_KEY: ${RINDE_DEMO_MAILBOX_ENCRYPTION_KEY:-}
       RINDE_PLATFORM_BOOTSTRAP_ENABLED: ${RINDE_PLATFORM_BOOTSTRAP_ENABLED:-false}
       RINDE_PLATFORM_BOOTSTRAP_NAME: ${RINDE_PLATFORM_BOOTSTRAP_NAME:-}
       RINDE_PLATFORM_BOOTSTRAP_EMAIL: ${RINDE_PLATFORM_BOOTSTRAP_EMAIL:-}
@@ -126,7 +128,7 @@ services:
       rabbitmq:
         condition: service_healthy
   gateway:
-    image: rinde/gateway:${GATEWAY_VERSION:-0.2.0}
+    image: rinde/gateway:${GATEWAY_VERSION:-0.3.0}
     build:
       context: .
       dockerfile: gateway/Dockerfile

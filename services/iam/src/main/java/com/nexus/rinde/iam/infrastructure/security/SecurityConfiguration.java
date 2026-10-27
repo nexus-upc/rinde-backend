@@ -48,6 +48,8 @@ public class SecurityConfiguration {
                         "/api/v1/auth/password")
                     .permitAll()
                     // Sin JWT: el gateway no enruta /api/internal, solo lo llaman otros servicios.
+                    .requestMatchers(HttpMethod.GET, "/api/v1/demo/features")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/internal/v1/**")
                     .permitAll()
                     .requestMatchers(
