@@ -21,6 +21,11 @@ class PlatformIdentityIntegrationTest extends AbstractIntegrationTest {
   @Autowired PlatformOwnerRepository owners;
   @Autowired PasswordEncoder encoder;
   @Autowired TenantRepository tenants;
+
+  @Autowired
+  com.nexus.rinde.iam.application.internal.eventhandlers.SubscriptionMessageHandler
+      subscriptionMessages;
+
   private static final String OWNER_PASSWORD = "TestOwnerPassword!42";
 
   @DynamicPropertySource
@@ -126,6 +131,51 @@ class PlatformIdentityIntegrationTest extends AbstractIntegrationTest {
         .perform(get("/api/v1/platform/audit/identity").header("Authorization", "Bearer " + owner))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.total").value(2));
+  }
+
+  @Test
+  void billingEventsRemainEffectiveDuringAdministrativeSuspension() throws Exception {
+    String id =
+        api.registerAndVerifyTenant(
+            "20123456789", "suspension@example.invalid", "CompanyPassword!42");
+    java.util.UUID tenantId = java.util.UUID.fromString(id);
+    String company = api.signInForToken("suspension@example.invalid", "CompanyPassword!42");
+    String owner = ownerToken();
+    mockMvc
+        .perform(
+            patch("/api/v1/platform/companies/" + id + "/access")
+                .header("Authorization", "Bearer " + owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"suspended\":true,\"reason\":\"Revisión de soporte\"}"))
+        .andExpect(status().isOk());
+    Instant now = Instant.now();
+    subscriptionMessages.handle(
+        new com.nexus.rinde.iam.application.events.SubscriptionStatusMessage(
+            java.util.UUID.randomUUID(), now, tenantId),
+        "subscription.suspended");
+    assertThat(tenants.findById(tenantId).orElseThrow().getSubscriptionStatus().name())
+        .isEqualTo("RESTRICTED");
+    subscriptionMessages.handle(
+        new com.nexus.rinde.iam.application.events.SubscriptionStatusMessage(
+            java.util.UUID.randomUUID(), now.plusSeconds(1), tenantId),
+        "subscription.activated");
+    var tenant = tenants.findById(tenantId).orElseThrow();
+    assertThat(tenant.getSubscriptionStatus().name()).isEqualTo("ACTIVE");
+    assertThat(tenant.isAccessSuspended()).isTrue();
+    mockMvc
+        .perform(get("/api/v1/users").header("Authorization", "Bearer " + company))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            patch("/api/v1/platform/companies/" + id + "/access")
+                .header("Authorization", "Bearer " + owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"suspended\":false,\"reason\":\"Revisión finalizada\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ACTIVE"));
+    mockMvc
+        .perform(get("/api/v1/users").header("Authorization", "Bearer " + company))
+        .andExpect(status().isOk());
   }
 
   @Test

@@ -46,13 +46,15 @@ public class IamContextFacadeImpl implements IamContextFacade {
   public Optional<String> findTenantStatus(UUID tenantId) {
     return tenantQueryService
         .handle(new GetTenantByIdQuery(new TenantId(tenantId)))
-        .map(tenant -> tenant.getStatus().name());
+        .map(tenant -> tenant.getAccessStatus().name());
   }
 
   @Override
   public Optional<String> findAdministratorEmail(UUID tenantId) {
     return userQueryService
-        .handle(new com.nexus.rinde.iam.domain.model.queries.GetUsersByTenantQuery(new TenantId(tenantId)))
+        .handle(
+            new com.nexus.rinde.iam.domain.model.queries.GetUsersByTenantQuery(
+                new TenantId(tenantId)))
         .stream()
         .filter(user -> "ADMINISTRATOR".equals(user.getRole().name()))
         .filter(user -> "ACTIVE".equals(user.getStatus().name()))
