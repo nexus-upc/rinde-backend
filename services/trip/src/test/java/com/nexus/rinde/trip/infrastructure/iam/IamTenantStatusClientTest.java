@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -50,20 +51,22 @@ class IamTenantStatusClientTest {
   }
 
   @Test
-  void anUnknownTenantIsEmpty() {
+  void anUnknownTenantCannotUseTheCachedToken() {
     iam.stubFor(get(urlPathEqualTo(STATUS)).willReturn(notFound()));
 
-    assertThat(client.findTenantStatus(TENANT)).isEmpty();
+    assertThatThrownBy(() -> client.findTenantStatus(TENANT))
+        .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   }
 
   @Test
-  void anUnreachableIamIsEmptySoTheTokenStatusIsUsed() {
+  void anUnreachableIamDeniesInsteadOfTrustingStaleTenantStatus() {
     WireMockServer stopped = new WireMockServer(WireMockConfiguration.options().dynamicPort());
     stopped.start();
     int port = stopped.port();
     stopped.stop();
 
-    assertThat(new IamTenantStatusClient("http://localhost:" + port).findTenantStatus(TENANT))
-        .isEmpty();
+    assertThatThrownBy(
+            () -> new IamTenantStatusClient("http://localhost:" + port).findTenantStatus(TENANT))
+        .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
   }
 }

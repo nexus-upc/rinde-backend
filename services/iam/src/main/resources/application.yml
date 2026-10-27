@@ -42,6 +42,14 @@ server:
   port: 8081
 
 rinde:
+  platform:
+    jwt:
+      secret: ${RINDE_PLATFORM_JWT_SECRET:}
+    bootstrap:
+      enabled: ${RINDE_PLATFORM_BOOTSTRAP_ENABLED:false}
+      name: ${RINDE_PLATFORM_BOOTSTRAP_NAME:}
+      email: ${RINDE_PLATFORM_BOOTSTRAP_EMAIL:}
+      password: ${RINDE_PLATFORM_BOOTSTRAP_PASSWORD:}
   messaging:
     exchange: ${RINDE_EVENTS_EXCHANGE:rinde.events}
     subscription:

@@ -39,9 +39,25 @@ public class JwtAuthenticationGlobalFilter implements GlobalFilter, Ordered {
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     ServerHttpRequest request = exchange.getRequest();
     String path = RequestPaths.canonical(request.getPath().value()).orElse("");
-    if (anonymousRequests.matches(request.getMethod(), path) || hasValidToken(request)) {
+    if (anonymousRequests.matches(request.getMethod(), path)) {
       return chain.filter(exchange);
     }
+    String authorization = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    String token =
+        authorization != null && authorization.startsWith(BEARER)
+            ? authorization.substring(BEARER.length()).trim()
+            : "";
+    boolean tenant = tokenVerifier.isValid(token);
+    boolean platform = tokenVerifier.isValidPlatform(token);
+    boolean platformPath = path.startsWith("/api/v1/platform/");
+    if ((platformPath && platform) || (!platformPath && tenant)) {
+      return chain.filter(exchange);
+    }
+    if (tenant || platform)
+      return problems.write(
+          exchange,
+          HttpStatus.FORBIDDEN,
+          "Este acceso no pertenece a ese ámbito de administración.");
     exchange.getResponse().getHeaders().set(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
     return problems.write(exchange, HttpStatus.UNAUTHORIZED, "Token ausente o inválido.");
   }

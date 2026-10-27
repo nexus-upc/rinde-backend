@@ -1,0 +1,62 @@
+name: Publish shared kernel
+on:
+  push:
+    branches: [develop]
+    paths:
+      - libraries/shared-kernel/**
+      - .github/workflows/publish-shared-kernel.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: shared-kernel-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          server-id: github
+      - name: Test and publish versioned library
+        run: ./mvnw -B -ntp -f libraries/shared-kernel/pom.xml clean deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve published library from a clean consumer
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(python3 -c "import xml.etree.ElementTree as e; print(e.parse('libraries/shared-kernel/pom.xml').getroot().find('{http://maven.apache.org/POM/4.0.0}version').text)")
+          consumer="$RUNNER_TEMP/rinde-consumer"
+          repository="$RUNNER_TEMP/rinde-consumer-repository"
+          mkdir -p "$consumer"
+          cat > "$consumer/pom.xml" <<EOF
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.nexus.verification</groupId><artifactId>clean-consumer</artifactId><version>1.0.0</version>
+            <properties><maven.compiler.source>21</maven.compiler.source><maven.compiler.target>21</maven.compiler.target></properties>
+            <repositories><repository><id>github</id><url>https://maven.pkg.github.com/nexus-upc/rinde-services</url></repository></repositories>
+            <dependencies><dependency><groupId>com.nexus</groupId><artifactId>rinde-shared-kernel</artifactId><version>$version</version></dependency></dependencies>
+          </project>
+          EOF
+          mkdir -p "$consumer/src/main/java"
+          cat > "$consumer/src/main/java/Verify.java" <<'EOF'
+          import com.nexus.rinde.shared.domain.exceptions.BusinessRuleException;
+          public class Verify {
+            public static void main(String[] args) {
+              if (!new BusinessRuleException("consumer").getMessage().equals("consumer")) throw new AssertionError();
+            }
+          }
+          EOF
+          ./mvnw -B -ntp -f "$consumer/pom.xml" "-Dmaven.repo.local=$repository" verify
+          java -cp "$consumer/target/classes:$repository/com/nexus/rinde-shared-kernel/$version/rinde-shared-kernel-$version.jar" Verify
+          cmp "libraries/shared-kernel/target/rinde-shared-kernel-$version.jar" "$repository/com/nexus/rinde-shared-kernel/$version/rinde-shared-kernel-$version.jar"
+          echo "Published $version and verified the downloaded JAR from an empty Maven repository." >> "$GITHUB_STEP_SUMMARY"

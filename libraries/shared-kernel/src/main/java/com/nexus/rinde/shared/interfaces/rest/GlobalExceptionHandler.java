@@ -31,6 +31,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+  @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+  public ResponseEntity<ProblemDetail> handleConstraints(
+      jakarta.validation.ConstraintViolationException ex) {
+    return respond(HttpStatus.BAD_REQUEST, "Los parámetros de la solicitud no son válidos.");
+  }
+
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<ProblemDetail> handleNotFound(ResourceNotFoundException ex) {
     return respond(HttpStatus.NOT_FOUND, ex.getMessage());

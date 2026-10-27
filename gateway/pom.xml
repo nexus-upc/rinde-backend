@@ -13,7 +13,7 @@
 
   <groupId>com.nexus</groupId>
   <artifactId>rinde-gateway</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <name>rinde-gateway</name>
   <description>Puerta de enlace de RINDE by NEXUS: enruta /api/v1 hacia IAM y el monolito, y valida el JWT</description>
 

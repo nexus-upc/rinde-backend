@@ -31,24 +31,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return request
+        .getRequestURI()
+        .substring(request.getContextPath().length())
+        .startsWith("/api/v1/platform/");
+  }
+
+  @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
     try {
-      resolveToken(request)
-          .flatMap(tokenReader::read)
-          .map(this::refreshTenantStatus)
-          .ifPresent(
-              user -> {
-                TenantContext.set(user);
-                SecurityContextHolder.getContext()
-                    .setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + user.role()))));
-              });
+      var current = resolveToken(request).flatMap(tokenReader::read).map(this::refreshTenantStatus);
+      if (current.isPresent() && "SUSPENDED".equals(current.get().tenantStatus())) {
+        response.setStatus(403);
+        response.setContentType("application/problem+json");
+        response.setCharacterEncoding("UTF-8");
+        response
+            .getWriter()
+            .write(
+                "{\"status\":403,\"title\":\"Forbidden\",\"detail\":\"El acceso de la empresa está"
+                    + " suspendido.\"}");
+        return;
+      }
+      current.ifPresent(
+          user -> {
+            TenantContext.set(user);
+            SecurityContextHolder.getContext()
+                .setAuthentication(
+                    new UsernamePasswordAuthenticationToken(
+                        user, null, List.of(new SimpleGrantedAuthority("ROLE_" + user.role()))));
+          });
       chain.doFilter(request, response);
+    } catch (org.springframework.web.server.ResponseStatusException ex) {
+      response.setStatus(ex.getStatusCode().value());
+      response.setContentType("application/problem+json");
+      response.setCharacterEncoding("UTF-8");
+      response
+          .getWriter()
+          .write(
+              "{\"status\":"
+                  + ex.getStatusCode().value()
+                  + ",\"title\":\"Service Unavailable\",\"detail\":\"No se pudo comprobar el acceso"
+                  + " de la empresa. Intente nuevamente.\"}");
     } finally {
       TenantContext.clear();
     }

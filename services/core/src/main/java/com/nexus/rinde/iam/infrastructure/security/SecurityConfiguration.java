@@ -2,6 +2,8 @@ package com.nexus.rinde.iam.infrastructure.security;
 
 import com.nexus.rinde.shared.infrastructure.security.JwtAuthenticationFilter;
 import com.nexus.rinde.shared.infrastructure.security.JwtTokenReader;
+import com.nexus.rinde.shared.infrastructure.security.PlatformAuthenticationFilter;
+import com.nexus.rinde.shared.infrastructure.security.PlatformTokenReader;
 import com.nexus.rinde.shared.infrastructure.security.TenantStatusProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +29,7 @@ public class SecurityConfiguration {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtTokenReader tokenReader,
+      PlatformTokenReader platformTokens,
       TenantStatusProvider tenantStatusProvider,
       ProblemDetailSecurityHandler errorHandler)
       throws Exception {
@@ -50,6 +53,10 @@ public class SecurityConfiguration {
                         "/swagger-ui/**",
                         "/v3/api-docs/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/internal/v1/fleet/**")
+                    .permitAll()
+                    .requestMatchers("/api/v1/platform/**")
+                    .hasAuthority("ROLE_PLATFORM_OWNER")
                     .anyRequest()
                     .authenticated())
         .exceptionHandling(
@@ -57,7 +64,9 @@ public class SecurityConfiguration {
                 handling.authenticationEntryPoint(errorHandler).accessDeniedHandler(errorHandler))
         .addFilterBefore(
             new JwtAuthenticationFilter(tokenReader, tenantStatusProvider),
-            UsernamePasswordAuthenticationFilter.class);
+            UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(
+            new PlatformAuthenticationFilter(platformTokens), JwtAuthenticationFilter.class);
     return http.build();
   }
 

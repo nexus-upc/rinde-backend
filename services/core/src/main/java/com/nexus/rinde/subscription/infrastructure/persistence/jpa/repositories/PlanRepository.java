@@ -13,5 +13,10 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
 
   List<Plan> findByActiveTrueOrderByNameAsc();
 
+  @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+  @org.springframework.data.jpa.repository.Query("select p from Plan p where p.planId=:id")
+  Optional<Plan> findForPlatformUpdate(
+      @org.springframework.data.repository.query.Param("id") UUID id);
+
   Optional<Plan> findByPlanIdAndActiveTrue(UUID planId);
 }

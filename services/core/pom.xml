@@ -13,7 +13,7 @@
 
   <groupId>com.nexus</groupId>
   <artifactId>rinde-backend</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <name>rinde-backend</name>
   <description>Backend de RINDE by NEXUS: monolito modular con un paquete por bounded context</description>
 
@@ -102,7 +102,7 @@
     <dependency>
       <groupId>com.nexus</groupId>
       <artifactId>rinde-shared-kernel</artifactId>
-      <version>0.1.0</version>
+      <version>0.2.0</version>
     </dependency>
 
     <dependency>
@@ -140,7 +140,7 @@
   <repositories>
     <repository>
       <id>github</id>
-      <url>https://maven.pkg.github.com/nexus-upc/rinde-shared-kernel</url>
+      <url>https://maven.pkg.github.com/nexus-upc/rinde-services</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>

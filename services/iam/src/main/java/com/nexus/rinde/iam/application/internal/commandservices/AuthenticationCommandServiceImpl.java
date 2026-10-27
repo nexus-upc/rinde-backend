@@ -86,6 +86,10 @@ public class AuthenticationCommandServiceImpl implements AuthenticationCommandSe
       throw new ForbiddenOperationException(
           "La empresa aún no confirmó su correo. Use el enlace de verificación que se le envió.");
     }
+    if (tenant.isAccessSuspended()) {
+      throw new ForbiddenOperationException(
+          "El acceso de la empresa está suspendido. Contacte a Rinde.");
+    }
     return tokenService.issueFor(user, tenant.getStatus());
   }
 

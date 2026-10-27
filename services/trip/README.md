@@ -93,7 +93,7 @@ Trip consulta a Fleet con las rutas siguientes. Fleet & Maintenance debe impleme
 
 Si Fleet no responde, responde con un error distinto de 404, o la conexión falla, Trip informa 503 con el mensaje "El servicio de flota no está disponible en este momento. Intente nuevamente más tarde.". El viaje no cambia en ese caso.
 
-Trip también consulta a IAM el estado de la empresa en `GET /api/internal/v1/tenants/{tenantId}/status`. Si IAM no responde, se usa el estado que trae el token.
+Trip también consulta a IAM el estado de la empresa en `GET /api/internal/v1/tenants/{tenantId}/status`. Si IAM no responde o la empresa ya no existe, se informa 503 y no se reutiliza el estado anterior del token.
 
 ## Eventos publicados
 
@@ -129,6 +129,6 @@ El paquete `com.nexus.rinde.trip` se organiza en las capas `domain`, `applicatio
 
 ## Límites conocidos
 
-- Hasta que Fleet implemente las rutas de la sección de Fleet, asignar un viaje contra el monolito responde 404 "El vehículo no existe.", porque el monolito todavía no expone esas consultas.
+- Los contratos internos de Fleet ya se exponen desde core. La asignación y el ciclo se comprobaron entre procesos reales. Falta trasladar Fleet a su servicio independiente.
 - La publicación después del commit no usa una tabla de salida (outbox). Si el broker cae justo después de guardar el viaje, ese evento se pierde y solo queda en el log.
 - El monolito conserva su propio módulo de viajes. Su retiro requiere la autorización de Pedro y el cambio de sus consumidores de eventos.
