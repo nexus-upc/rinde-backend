@@ -50,39 +50,51 @@ spring:
               order: 4
               predicates:
                 - Path=/api/internal/**
-            # Expense y Settlement siguen en el monolito; van antes que el resto de /trips.
+            # Settlement sigue en el monolito; va antes que el resto de /trips.
             - id: monolith-trip-children
               uri: ${MONOLITH_URL:http://localhost:8080}
               order: 5
               predicates:
-                - Path=/api/v1/trips/*/expenses/**,/api/v1/trips/*/settlement/**
+                - Path=/api/v1/trips/*/settlement/**
+            - id: expense-service
+              uri: ${EXPENSE_SERVICE_URL:http://localhost:8084}
+              order: 6
+              predicates:
+                - Path=/api/v1/trips/*/expenses,/api/v1/trips/*/expenses/**,/api/v1/expenses,/api/v1/expenses/**
+            - id: expense-api-docs
+              uri: ${EXPENSE_SERVICE_URL:http://localhost:8084}
+              order: 7
+              predicates:
+                - Path=/v3/api-docs/expense
+              filters:
+                - RewritePath=/v3/api-docs/expense,/v3/api-docs
             - id: trip-service
               uri: ${TRIP_SERVICE_URL:http://localhost:8082}
-              order: 6
+              order: 8
               predicates:
                 - Path=/api/v1/trips/**
             - id: trip-api-docs
               uri: ${TRIP_SERVICE_URL:http://localhost:8082}
-              order: 7
+              order: 9
               predicates:
                 - Path=/v3/api-docs/trip
               filters:
                 - RewritePath=/v3/api-docs/trip,/v3/api-docs
             - id: fleet-service
               uri: ${FLEET_SERVICE_URL:http://localhost:8083}
-              order: 8
+              order: 10
               predicates:
                 - Path=/api/v1/vehicles/**,/api/v1/drivers/**,/api/v1/maintenances/**
             - id: fleet-api-docs
               uri: ${FLEET_SERVICE_URL:http://localhost:8083}
-              order: 9
+              order: 11
               predicates:
                 - Path=/v3/api-docs/fleet
               filters:
                 - RewritePath=/v3/api-docs/fleet,/v3/api-docs
             - id: monolith-service
               uri: ${MONOLITH_URL:http://localhost:8080}
-              order: 10
+              order: 12
               predicates:
                 - Path=/api/v1/**
           globalcors:
@@ -125,6 +137,8 @@ springdoc:
         url: /v3/api-docs/trip
       - name: Flota
         url: /v3/api-docs/fleet
+      - name: Gastos
+        url: /v3/api-docs/expense
       - name: Monolito
         url: /v3/api-docs/monolith
 
