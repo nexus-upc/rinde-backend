@@ -1,0 +1,59 @@
+# Los secretos y los datos de conexión se leen del archivo .env en la raíz del servicio.
+# Copia .env.example como .env y completa sus valores.
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: rinde-fleet-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rinde_fleet}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
+  # El esquema fleet se migra con Flyway desde FleetFlywayConfiguration.
+  flyway:
+    enabled: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        # Un mensaje rechazado no vuelve a la cola: se descarta y queda registrado en el log.
+        default-requeue-rejected: false
+
+server:
+  port: 8083
+
+rinde:
+  security:
+    jwt:
+      # Mínimo 32 caracteres. Debe ser el mismo secreto que usa IAM para emitir los tokens.
+      secret: ${JWT_SECRET}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"
