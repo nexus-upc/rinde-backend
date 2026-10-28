@@ -1,13 +1,13 @@
 # rinde-trip-service
 
-Servicio de Trip Management de RINDE by NEXUS: programación de viajes, asignación de vehículo y conductor, inicio y fin del viaje. Es el segundo servicio extraído del monolito `rinde-backend` (Sprint 2, tarea S2-05). Usa la librería `rinde-shared-kernel` (com.nexus:rinde-shared-kernel:0.1.0), consulta a Fleet y a IAM por HTTP y se comunica con los demás servicios por RabbitMQ.
+Servicio de Trip Management de RINDE by NEXUS: programación de viajes, asignación de vehículo y conductor, inicio y fin del viaje. Es el segundo servicio extraído del monolito `rinde-backend` (Sprint 2, tarea S2-05). Usa la librería `rinde-shared-kernel` (com.nexus:rinde-shared-kernel:0.2.0), consulta a Fleet y a IAM por HTTP y se comunica con los demás servicios por RabbitMQ.
 
 ## Requisitos
 
 - Java 21.
 - PostgreSQL 17 en local (sin Docker).
 - RabbitMQ 4 en local. Por defecto usa el usuario `guest` en `localhost:5672`.
-- La librería `rinde-shared-kernel` 0.1.0 instalada en el repositorio local de Maven, o disponible en GitHub Packages.
+- La librería `rinde-shared-kernel` 0.2.0 instalada en el repositorio local de Maven, o disponible en GitHub Packages.
 
 ## Configuración
 

@@ -8,7 +8,9 @@ El gateway no tiene lógica de negocio. Los servicios vuelven a validar el token
 
 | Ruta | Destino | Variable |
 | --- | --- | --- |
-| `/api/v1/auth/**`, `/api/v1/tenants/**`, `/api/v1/users/**` | IAM (`/api/v1/...`) | `IAM_SERVICE_URL` |
+| `/api/v1/platform/auth/**`, `/api/v1/platform/me`, `/api/v1/platform/overview`, `/api/v1/platform/companies/**`, `/api/v1/platform/audit/identity`, `/api/v1/platform/demo-mailbox/**` | IAM | `IAM_SERVICE_URL` |
+| `/api/v1/platform/billing/**`, `/api/v1/platform/plans/**`, `/api/v1/platform/subscriptions/**`, `/api/v1/platform/payments/**`, `/api/v1/platform/audit/billing` | Monolito (Subscriptions & Billing) | `MONOLITH_URL` |
+| `/api/v1/auth/**`, `/api/v1/tenants/**`, `/api/v1/users/**`, `/api/v1/demo/features` | IAM (`/api/v1/...`) | `IAM_SERVICE_URL` |
 | `/api/v1/trips/{id}/expenses/**`, `/api/v1/trips/{id}/settlement/**` | Monolito (Expense y Settlement) | `MONOLITH_URL` |
 | `/api/v1/trips`, `/api/v1/trips/**` (resto de viajes) | Trip (`/api/v1/trips/...`) | `TRIP_SERVICE_URL` |
 | `/api/v1/**` (resto de rutas) | Monolito | `MONOLITH_URL` |
@@ -30,11 +32,13 @@ Estas peticiones pasan sin `Authorization`:
 - `POST /api/v1/auth/sign-in`.
 - `POST /api/v1/auth/password-reset`.
 - `POST /api/v1/auth/password`.
+- `POST /api/v1/platform/auth/sign-in` (inicio de sesión del dueño).
+- `GET /api/v1/demo/features` (solo informa si el buzón de demostración está habilitado).
 - Cualquier método sobre `/api/v1/billing/webhooks/**`. El monolito valida la firma del webhook.
 - `/v3/api-docs/**`, `/swagger-ui/**`, `/swagger-ui.html`, `/webjars/**` y `/actuator/health`.
 - Las peticiones preflight CORS (`OPTIONS`).
 
-El resto exige `Authorization: Bearer <jwt>`. Si el token falta, tiene firma distinta o está vencido, el gateway responde 401 con un cuerpo RFC 7807 y el mensaje "Token ausente o inválido.".
+El resto exige `Authorization: Bearer <jwt>`. Las rutas `/api/v1/platform/**` solo aceptan un token de plataforma, firmado con `RINDE_PLATFORM_JWT_SECRET`, con emisor `rinde-platform` y audiencia `rinde-platform-api`; las demás solo aceptan un token de empresa. Si el token falta, tiene firma distinta o está vencido, el gateway responde 401 con un cuerpo RFC 7807 y el mensaje "Token ausente o inválido.".
 
 ## Comportamiento general
 
@@ -50,6 +54,7 @@ Las variables se leen del archivo `.env` de la raíz, que no se sube a Git. Copi
 | Variable | Obligatoria | Valor por defecto | Descripción |
 | --- | --- | --- | --- |
 | `JWT_SECRET` | Sí | Ninguno | Secreto HS256 de al menos 32 caracteres. Debe ser el mismo que usan IAM y el monolito. |
+| `RINDE_PLATFORM_JWT_SECRET` | No | Ninguno | Secreto de los tokens de plataforma, distinto de `JWT_SECRET`. Sin él no se acepta ningún token de plataforma. |
 | `IAM_SERVICE_URL` | No | `http://localhost:8081` | Dirección de `rinde-iam-service`. |
 | `TRIP_SERVICE_URL` | No | `http://localhost:8082` | Dirección de `rinde-trip-service`. |
 | `MONOLITH_URL` | No | `http://localhost:8080` | Dirección del monolito `rinde-backend`. |
