@@ -3,13 +3,14 @@ package com.nexus.rinde.subscription.interfaces.rest;
 import com.nexus.rinde.configuration.OpenApiConfiguration;
 import com.nexus.rinde.shared.infrastructure.security.TenantContext;
 import com.nexus.rinde.subscription.domain.model.commands.ChoosePlanCommand;
+import com.nexus.rinde.subscription.domain.model.commands.StartSubscriptionCheckoutCommand;
+import com.nexus.rinde.subscription.domain.model.queries.GetCurrentSubscriptionQuery;
 import com.nexus.rinde.subscription.domain.model.queries.GetSubscriptionByTenantQuery;
 import com.nexus.rinde.subscription.domain.model.queries.ListActivePlansQuery;
-import com.nexus.rinde.subscription.domain.model.commands.StartSubscriptionCheckoutCommand;
+import com.nexus.rinde.subscription.domain.model.valueobjects.PaymentCheckout;
 import com.nexus.rinde.subscription.domain.services.PaymentCommandService;
 import com.nexus.rinde.subscription.domain.services.SubscriptionCommandService;
 import com.nexus.rinde.subscription.domain.services.SubscriptionQueryService;
-import com.nexus.rinde.subscription.domain.model.valueobjects.PaymentCheckout;
 import com.nexus.rinde.subscription.interfaces.rest.resources.ChoosePlanResource;
 import com.nexus.rinde.subscription.interfaces.rest.resources.PaymentCheckoutResource;
 import com.nexus.rinde.subscription.interfaces.rest.resources.PlanResource;
@@ -23,12 +24,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.ProblemDetail;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,13 +40,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Value;
-import com.nexus.rinde.subscription.domain.model.queries.GetCurrentSubscriptionQuery;
 
 /** Endpoints del catálogo compartido y las suscripciones por empresa. */
 @RestController
 @RequestMapping("/api/v1")
 @SecurityRequirement(name = OpenApiConfiguration.BEARER_SCHEME)
+@Tag(name = "Subscriptions", description = "Planes, suscripción y pago de la empresa (US38 a US40)")
 public class SubscriptionsController {
 
   private final SubscriptionCommandService commandService;
