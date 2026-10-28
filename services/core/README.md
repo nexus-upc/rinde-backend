@@ -2,7 +2,9 @@
 
 Backend de RINDE by NEXUS: gestión de viajes, gastos, liquidaciones, flota e incidencias para pymes de transporte de carga.
 
-Es un monolito modular en Spring Boot. Cada bounded context tiene su paquete (`iam`, `trip`, `expense`, `settlement`, `fleet`, `incident`, `subscription`, `notification`, `dashboard`) y lo común está en `shared`.
+Es el monolito modular original, dentro del monorepo. Hoy atiende Fleet, Expense, Settlement, Subscriptions, Notifications y Dashboard; Incident tiene solo su estructura. Lo común viene de la librería `rinde-shared-kernel` 0.2.0.
+
+Los paquetes `trip` e `iam` que siguen aquí son copias antiguas: IAM y Trip ya funcionan en `services/iam` y `services/trip`, y el gateway no envía tráfico a estas copias. No usarlas ni modificarlas. Fleet y Expense se están trasladando a `services/fleet` y `services/expense`; su código se mantiene aquí hasta que esos servicios funcionen.
 
 ## Requisitos
 
@@ -38,10 +40,6 @@ Pruebas:
 ```
 mvnw.cmd clean verify
 ```
-
-## Tareas
-
-El avance de cada integrante está en [TODO.md](TODO.md).
 
 ## Notifications y RabbitMQ (S2-08)
 
