@@ -2,12 +2,15 @@ package com.nexus.rinde.iam.interfaces.internal;
 
 import com.nexus.rinde.iam.infrastructure.persistence.jpa.repositories.TenantRepository;
 import com.nexus.rinde.shared.domain.exceptions.BusinessRuleException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/internal/v1/tenant-directory")
+@Tag(name = "Internal", description = "Consultas entre servicios de RINDE (no públicas)")
 public class InternalTenantDirectoryController {
   private final TenantRepository tenants;
 
@@ -15,6 +18,7 @@ public class InternalTenantDirectoryController {
     this.tenants = tenants;
   }
 
+  @Operation(summary = "Nombres de un conjunto acotado de empresas")
   @GetMapping
   public List<Name> names(@RequestParam List<UUID> ids) {
     if (ids.isEmpty() || ids.size() > 100)

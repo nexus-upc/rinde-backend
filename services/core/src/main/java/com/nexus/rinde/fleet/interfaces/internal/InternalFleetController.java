@@ -2,12 +2,15 @@ package com.nexus.rinde.fleet.interfaces.internal;
 
 import com.nexus.rinde.fleet.interfaces.acl.*;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
 /** Contratos HTTP de Fleet durante la transición al servicio independiente. */
 @RestController
 @RequestMapping("/api/internal/v1/fleet/tenants/{tenantId}")
+@Tag(name = "Internal", description = "Consultas entre servicios de RINDE (no públicas)")
 public class InternalFleetController {
   private final FleetContextFacade fleet;
 
@@ -15,6 +18,7 @@ public class InternalFleetController {
     this.fleet = fleet;
   }
 
+  @Operation(summary = "Estado de mantenimiento de una unidad")
   @GetMapping("/vehicles/{vehicleId}/health")
   public VehicleHealthSummary health(@PathVariable UUID tenantId, @PathVariable UUID vehicleId) {
     return fleet
@@ -22,6 +26,7 @@ public class InternalFleetController {
         .orElseThrow(() -> new ResourceNotFoundException("El vehículo no existe."));
   }
 
+  @Operation(summary = "Habilitación de un conductor")
   @GetMapping("/drivers/{driverId}/eligibility")
   public DriverEligibilitySummary eligibility(
       @PathVariable UUID tenantId, @PathVariable UUID driverId) {
@@ -30,6 +35,7 @@ public class InternalFleetController {
         .orElseThrow(() -> new ResourceNotFoundException("El conductor no existe."));
   }
 
+  @Operation(summary = "Conductor asociado a un usuario")
   @GetMapping("/users/{userId}/driver")
   public DriverId driver(@PathVariable UUID tenantId, @PathVariable UUID userId) {
     return fleet

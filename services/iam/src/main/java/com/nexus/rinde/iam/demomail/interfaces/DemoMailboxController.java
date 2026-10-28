@@ -3,6 +3,8 @@ package com.nexus.rinde.iam.demomail.interfaces;
 import com.nexus.rinde.iam.demomail.application.DemoMailboxService;
 import com.nexus.rinde.iam.domain.model.valueobjects.TokenPurpose;
 import com.nexus.rinde.shared.interfaces.rest.PageResource;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.*;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/platform/demo-mailbox/messages")
 @PreAuthorize("hasAuthority('ROLE_PLATFORM_OWNER')")
 @ConditionalOnProperty(name = "rinde.demo.mailbox.enabled", havingValue = "true")
+@Tag(name = "Platform mailbox", description = "Buzón de demostración del dueño de Rinde: verificación, invitación y recuperación")
 public class DemoMailboxController {
   private final DemoMailboxService mailbox;
 
@@ -23,6 +26,7 @@ public class DemoMailboxController {
     this.mailbox = mailbox;
   }
 
+  @Operation(summary = "Listar los mensajes de acceso de demostración")
   @GetMapping
   public ResponseEntity<PageResource<DemoMailboxService.Summary>> list(
       @RequestParam(defaultValue = "") @Size(max = 150) String search,
@@ -32,6 +36,7 @@ public class DemoMailboxController {
     return privateResponse(mailbox.list(search, purpose, page, size));
   }
 
+  @Operation(summary = "Abrir un mensaje y su enlace vigente")
   @GetMapping("/{id}")
   public ResponseEntity<DemoMailboxService.Detail> open(@PathVariable UUID id) {
     return privateResponse(mailbox.open(id));
