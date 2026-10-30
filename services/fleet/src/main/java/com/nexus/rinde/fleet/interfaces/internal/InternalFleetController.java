@@ -51,6 +51,18 @@ public class InternalFleetController {
     return new VehicleCount(fleet.countVehiclesByTenantId(tenantId));
   }
 
+  @Operation(summary = "Unidades registradas por empresa")
+  @GetMapping("/vehicles")
+  public List<FleetVehicleSummary> vehicles(@PathVariable UUID tenantId) {
+    return fleet.findVehiclesByTenantId(tenantId);
+  }
+
+  @Operation(summary = "Conductores registrados por empresa")
+  @GetMapping("/drivers")
+  public List<FleetDriverSummary> drivers(@PathVariable UUID tenantId) {
+    return fleet.findDriversByTenantId(tenantId);
+  }
+
   public record DriverId(UUID driverId) {}
 
   public record VehicleCount(long count) {}
