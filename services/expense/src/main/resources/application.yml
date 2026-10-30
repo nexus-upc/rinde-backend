@@ -40,6 +40,10 @@ rinde:
     jwt:
       # Mínimo 32 caracteres. Debe ser el mismo secreto que usa IAM para emitir los tokens.
       secret: ${JWT_SECRET}
+  iam:
+    service-url: ${IAM_SERVICE_URL:http://localhost:8081}
+  trip:
+    service-url: ${TRIP_SERVICE_URL:http://localhost:8082}
 
 springdoc:
   api-docs:
