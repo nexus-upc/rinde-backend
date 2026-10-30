@@ -1,6 +1,7 @@
 package com.nexus.rinde.subscription.infrastructure.messaging;
 
 import com.nexus.rinde.shared.domain.model.events.IntegrationEvent;
+import com.nexus.rinde.subscription.interfaces.acl.PlanChanged;
 import com.nexus.rinde.subscription.interfaces.acl.SubscriptionActivated;
 import com.nexus.rinde.subscription.interfaces.acl.SubscriptionSuspended;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +36,12 @@ public class SubscriptionEventPublisher {
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void on(SubscriptionSuspended event) {
     publish("subscription.suspended", event);
+  }
+
+  /** Fleet separado ajusta con este evento el límite de unidades de la empresa. */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  public void on(PlanChanged event) {
+    publish("subscription.plan-changed", event);
   }
 
   private void publish(String routingKey, IntegrationEvent event) {

@@ -78,11 +78,19 @@ rinde:
   iam:
     remote-enabled: ${RINDE_IAM_REMOTE_ENABLED:true}
     base-url: ${IAM_SERVICE_URL:http://localhost:8081}
+  expense:
+    remote-enabled: ${RINDE_EXPENSE_REMOTE_ENABLED:true}
+    base-url: ${EXPENSE_SERVICE_URL:http://localhost:8084}
     tokens:
       invitation-validity-hours: 48
       password-reset-validity-hours: 1
       email-verification-validity-hours: 48
+  trip:
+    remote-enabled: ${RINDE_TRIP_REMOTE_ENABLED:true}
+    base-url: ${TRIP_SERVICE_URL:http://localhost:8082}
   fleet:
+    remote-enabled: ${RINDE_FLEET_REMOTE_ENABLED:true}
+    base-url: ${FLEET_SERVICE_URL:http://localhost:8083}
     maintenance-alerts:
       # Cron de la revisión de mantenimientos próximos o vencidos (todos los días a las 6:00).
       cron: "0 0 6 * * *"

@@ -4,6 +4,7 @@ import com.nexus.rinde.fleet.interfaces.acl.*;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +50,18 @@ public class InternalFleetController {
   @GetMapping("/vehicles/count")
   public VehicleCount count(@PathVariable UUID tenantId) {
     return new VehicleCount(fleet.countVehiclesByTenantId(tenantId));
+  }
+
+  @Operation(summary = "Unidades registradas por empresa")
+  @GetMapping("/vehicles")
+  public List<FleetVehicleSummary> vehicles(@PathVariable UUID tenantId) {
+    return fleet.findVehiclesByTenantId(tenantId);
+  }
+
+  @Operation(summary = "Conductores registrados por empresa")
+  @GetMapping("/drivers")
+  public List<FleetDriverSummary> drivers(@PathVariable UUID tenantId) {
+    return fleet.findDriversByTenantId(tenantId);
   }
 
   public record DriverId(UUID driverId) {}

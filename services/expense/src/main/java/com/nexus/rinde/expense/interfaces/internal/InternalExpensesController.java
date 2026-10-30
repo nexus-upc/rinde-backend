@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(
-    value = "/api/internal/v1/expenses/tenants/{tenantId}/trips/{tripId}",
+    value = "/api/internal/v1/expenses/tenants/{tenantId}",
     produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Internal", description = "Consultas entre servicios de RINDE (no públicas)")
 @SecurityRequirements
@@ -33,7 +33,7 @@ public class InternalExpensesController {
     this.expenseRepository = expenseRepository;
   }
 
-  @GetMapping("/approved")
+  @GetMapping("/trips/{tripId}/approved")
   @Operation(summary = "Gastos aprobados de un viaje para liquidación")
   public List<InternalExpenseResource> listApproved(
       @PathVariable UUID tenantId, @PathVariable UUID tripId) {
@@ -44,11 +44,19 @@ public class InternalExpensesController {
         .toList();
   }
 
-  @GetMapping
+  @GetMapping("/trips/{tripId}")
   @Operation(summary = "Todos los gastos de un viaje de la empresa")
   public List<InternalExpenseResource> listAll(
       @PathVariable UUID tenantId, @PathVariable UUID tripId) {
     return expenseRepository.findByTenantIdAndTripId(tenantId, tripId).stream()
+        .map(InternalExpensesController::toResource)
+        .toList();
+  }
+
+  @GetMapping
+  @Operation(summary = "Todos los gastos de la empresa, para el tablero operativo")
+  public List<InternalExpenseResource> listByTenant(@PathVariable UUID tenantId) {
+    return expenseRepository.findByTenantId(tenantId).stream()
         .map(InternalExpensesController::toResource)
         .toList();
   }
