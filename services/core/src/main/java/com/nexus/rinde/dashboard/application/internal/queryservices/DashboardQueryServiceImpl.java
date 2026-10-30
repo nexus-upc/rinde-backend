@@ -1,7 +1,5 @@
 package com.nexus.rinde.dashboard.application.internal.queryservices;
 
-import com.nexus.rinde.dashboard.application.internal.outboundservices.acl.DashboardFleetClient;
-import com.nexus.rinde.dashboard.application.internal.outboundservices.acl.DashboardTripClient;
 import com.nexus.rinde.dashboard.domain.model.queries.GetFleetStatusQuery;
 import com.nexus.rinde.dashboard.domain.model.queries.GetOperationalMetricsQuery;
 import com.nexus.rinde.dashboard.domain.model.queries.GetTripSummaryQuery;
@@ -13,11 +11,13 @@ import com.nexus.rinde.dashboard.interfaces.rest.resources.OperationalMetricsRes
 import com.nexus.rinde.dashboard.interfaces.rest.resources.TripSummaryResource;
 import com.nexus.rinde.expense.interfaces.acl.ExpenseContextFacade;
 import com.nexus.rinde.expense.interfaces.acl.ExpenseSummary;
+import com.nexus.rinde.fleet.interfaces.acl.FleetContextFacade;
 import com.nexus.rinde.fleet.interfaces.acl.FleetDriverSummary;
 import com.nexus.rinde.fleet.interfaces.acl.FleetVehicleSummary;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementSummary;
 import com.nexus.rinde.settlement.interfaces.acl.SettlementContextFacade;
 import com.nexus.rinde.shared.domain.exceptions.ResourceNotFoundException;
+import com.nexus.rinde.trip.interfaces.acl.TripContextFacade;
 import com.nexus.rinde.trip.interfaces.acl.TripSummary;
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,27 +29,27 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DashboardQueryServiceImpl implements DashboardQueryService {
 
-  private final DashboardTripClient tripClient;
+  private final TripContextFacade tripFacade;
   private final SettlementContextFacade settlementFacade;
   private final ExpenseContextFacade expenseFacade;
-  private final DashboardFleetClient fleetClient;
+  private final FleetContextFacade fleetFacade;
 
   public DashboardQueryServiceImpl(
-      DashboardTripClient tripClient,
+      TripContextFacade tripFacade,
       SettlementContextFacade settlementFacade,
       ExpenseContextFacade expenseFacade,
-      DashboardFleetClient fleetClient) {
-    this.tripClient = tripClient;
+      FleetContextFacade fleetFacade) {
+    this.tripFacade = tripFacade;
     this.settlementFacade = settlementFacade;
     this.expenseFacade = expenseFacade;
-    this.fleetClient = fleetClient;
+    this.fleetFacade = fleetFacade;
   }
 
   @Override
   @Transactional(readOnly = true)
   public TripSummaryResource handle(GetTripSummaryQuery query) {
     TripSummary trip =
-        tripClient
+        tripFacade
             .findByIdAndTenantId(query.tripId(), query.tenantId())
             .orElseThrow(() -> new ResourceNotFoundException("El viaje no existe."));
 
@@ -98,8 +98,8 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   public FleetStatusResource handle(GetFleetStatusQuery query) {
     UUID tenantId = query.tenantId();
 
-    List<FleetVehicleSummary> vehicles = fleetClient.findVehiclesByTenantId(tenantId);
-    List<FleetDriverSummary> drivers = fleetClient.findDriversByTenantId(tenantId);
+    List<FleetVehicleSummary> vehicles = fleetFacade.findVehiclesByTenantId(tenantId);
+    List<FleetDriverSummary> drivers = fleetFacade.findDriversByTenantId(tenantId);
 
     int available = (int) vehicles.stream().filter(v -> "AVAILABLE".equals(v.status())).count();
     int inTrip = (int) vehicles.stream().filter(v -> "IN_TRIP".equals(v.status())).count();
@@ -150,7 +150,7 @@ public class DashboardQueryServiceImpl implements DashboardQueryService {
   public OperationalMetricsResource handle(GetOperationalMetricsQuery query) {
     UUID tenantId = query.tenantId();
 
-    List<TripSummary> trips = tripClient.findByTenantId(tenantId);
+    List<TripSummary> trips = tripFacade.findByTenantId(tenantId);
     List<ExpenseSummary> expenses = expenseFacade.findByTenantId(tenantId);
 
     int scheduled = (int) trips.stream().filter(t -> "SCHEDULED".equals(t.status())).count();
