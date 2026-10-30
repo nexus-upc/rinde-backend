@@ -86,16 +86,15 @@ class GatewayRoutingIntegrationTest extends AbstractGatewayIntegrationTest {
   }
 
   @Test
-  void routesTripExpensesAndSettlementToMonolith() {
+  void routesTripExpensesToExpenseServiceAndSettlementToMonolith() {
     String token = validToken();
-    MONOLITH.stubFor(get(urlEqualTo("/api/v1/trips/123/expenses")).willReturn(okJson("[]")));
-    MONOLITH.stubFor(
-        get(urlEqualTo("/api/v1/trips/123/expenses/456")).willReturn(okJson("{}")));
+    EXPENSE.stubFor(get(urlEqualTo("/api/v1/trips/123/expenses")).willReturn(okJson("[]")));
+    EXPENSE.stubFor(get(urlEqualTo("/api/v1/expenses/456")).willReturn(okJson("{}")));
     MONOLITH.stubFor(get(urlEqualTo("/api/v1/trips/123/settlement")).willReturn(okJson("{}")));
 
     for (String path :
         new String[] {
-          "/api/v1/trips/123/expenses", "/api/v1/trips/123/expenses/456", "/api/v1/trips/123/settlement"
+          "/api/v1/trips/123/expenses", "/api/v1/expenses/456", "/api/v1/trips/123/settlement"
         }) {
       webTestClient
           .get()
@@ -106,13 +105,32 @@ class GatewayRoutingIntegrationTest extends AbstractGatewayIntegrationTest {
           .isOk();
     }
 
-    MONOLITH.verify(
+    EXPENSE.verify(
         getRequestedFor(urlEqualTo("/api/v1/trips/123/expenses"))
             .withHeader(AUTHORIZATION, equalTo("Bearer " + token)));
-    MONOLITH.verify(getRequestedFor(urlEqualTo("/api/v1/trips/123/expenses/456")));
+    EXPENSE.verify(getRequestedFor(urlEqualTo("/api/v1/expenses/456")));
+    MONOLITH.verify(1, anyRequestedFor(anyUrl()));
     MONOLITH.verify(getRequestedFor(urlEqualTo("/api/v1/trips/123/settlement")));
     TRIP.verify(0, anyRequestedFor(anyUrl()));
   }
+
+  @Test
+  void routesVehiclesDriversAndMaintenancesToFleetService() {
+    String token = validToken();
+    for (String path : new String[] {"/api/v1/vehicles", "/api/v1/drivers", "/api/v1/maintenances"}) {
+      FLEET.stubFor(get(urlEqualTo(path)).willReturn(okJson("[]")));
+      webTestClient
+          .get()
+          .uri(path)
+          .header(AUTHORIZATION, "Bearer " + token)
+          .exchange()
+          .expectStatus()
+          .isOk();
+      FLEET.verify(getRequestedFor(urlEqualTo(path)));
+    }
+    MONOLITH.verify(0, anyRequestedFor(anyUrl()));
+  }
+
 
   @Test
   void servesTripOpenApiDocsThroughRewrittenRoute() {
