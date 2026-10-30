@@ -18,8 +18,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 /**
- * Base de las pruebas del gateway. IAM y el monolito son servidores WireMock; el secreto JWT es de
- * prueba y no es el de ningún entorno.
+ * Base de las pruebas del gateway. Los servicios y el monolito son servidores WireMock; el secreto
+ * JWT es de prueba y no es el de ningún entorno.
  */
 abstract class AbstractGatewayIntegrationTest {
 
@@ -30,11 +30,15 @@ abstract class AbstractGatewayIntegrationTest {
   static final WireMockServer IAM = new WireMockServer(wireMockConfig().dynamicPort());
   static final WireMockServer MONOLITH = new WireMockServer(wireMockConfig().dynamicPort());
   static final WireMockServer TRIP = new WireMockServer(wireMockConfig().dynamicPort());
+  static final WireMockServer FLEET = new WireMockServer(wireMockConfig().dynamicPort());
+  static final WireMockServer EXPENSE = new WireMockServer(wireMockConfig().dynamicPort());
 
   static {
     IAM.start();
     MONOLITH.start();
     TRIP.start();
+    FLEET.start();
+    EXPENSE.start();
   }
 
   @Autowired WebTestClient webTestClient;
@@ -44,6 +48,8 @@ abstract class AbstractGatewayIntegrationTest {
     registry.add("IAM_SERVICE_URL", () -> "http://localhost:" + IAM.port());
     registry.add("MONOLITH_URL", () -> "http://localhost:" + MONOLITH.port());
     registry.add("TRIP_SERVICE_URL", () -> "http://localhost:" + TRIP.port());
+    registry.add("FLEET_SERVICE_URL", () -> "http://localhost:" + FLEET.port());
+    registry.add("EXPENSE_SERVICE_URL", () -> "http://localhost:" + EXPENSE.port());
     registry.add("JWT_SECRET", () -> TEST_SECRET);
     registry.add("CORS_ALLOWED_ORIGINS", () -> ALLOWED_ORIGIN);
   }
@@ -53,6 +59,8 @@ abstract class AbstractGatewayIntegrationTest {
     IAM.resetAll();
     MONOLITH.resetAll();
     TRIP.resetAll();
+    FLEET.resetAll();
+    EXPENSE.resetAll();
   }
 
   static String validToken() {
