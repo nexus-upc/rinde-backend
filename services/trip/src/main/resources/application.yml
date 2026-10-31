@@ -42,7 +42,7 @@ rinde:
       secret: ${JWT_SECRET}
   fleet:
     # Mientras Fleet siga en el monolito, las consultas internas se hacen al puerto 8080.
-    service-url: ${FLEET_SERVICE_URL:http://localhost:8080}
+    service-url: ${FLEET_SERVICE_URL:http://localhost:8083}
   iam:
     service-url: ${IAM_SERVICE_URL:http://localhost:8081}
 
