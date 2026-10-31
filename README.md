@@ -1,102 +1,66 @@
-# RINDE Backend
+# RINDE Services
 
-Backend de RINDE by NEXUS: gestión de viajes, gastos, liquidaciones, flota e incidencias para pymes de transporte de carga.
+Backend de RINDE by NEXUS. Cada carpeta es un componente con su propio pom.xml, wrapper de Maven, `.env`, base de datos, Dockerfile y versión. Los clientes están en [nexus-upc/rinde-apps](https://github.com/nexus-upc/rinde-apps).
 
-Es un monolito modular en Spring Boot. Cada bounded context tiene su paquete (`iam`, `trip`, `expense`, `settlement`, `fleet`, `incident`, `subscription`, `notification`, `dashboard`) y lo común está en `shared`.
+Se desarrolla en `develop`. `main` recibe solo las versiones cerradas de cada sprint.
 
-## Requisitos
+## Componentes
 
-- JDK 21
-- PostgreSQL 16 o superior
-- RabbitMQ activo en el puerto 5672
+| Carpeta | Artefacto | Versión | Puerto | Base |
+|---|---|---|---|---|
+| libraries/shared-kernel | com.nexus:rinde-shared-kernel | 0.2.0 | No aplica | No aplica |
+| services/iam | rinde-iam-service | 0.3.0 | 8081 | rinde_iam |
+| services/trip | rinde-trip-service | 0.2.0 | 8082 | rinde_trip |
+| services/fleet | rinde-fleet-service | 0.1.0 | 8083 | rinde_fleet |
+| services/expense | rinde-expense-service | 0.1.0 | 8084 | rinde_expense |
+| services/core | rinde-backend | 0.3.0 | 8080 | rinde |
+| gateway | rinde-gateway | 0.3.0 | 8000 | No aplica |
 
-## Base de datos
+Core atiende los contextos que siguen en el monolito: Settlement, Subscriptions & Billing, Notifications y Operations Dashboard. Consulta a Trip, Fleet, Expense e IAM por HTTP. Conserva copias antiguas de los paquetes `trip`, `iam`, `fleet` y `expense` que ya no reciben tráfico: no usarlas ni modificarlas.
 
-Crea las dos bases en tu PostgreSQL:
+El README de cada carpeta detalla su configuración, endpoints, contratos internos y eventos.
 
-```sql
-CREATE DATABASE rinde;
-CREATE DATABASE rinde_test;
+## Empezar
+
+```powershell
+git clone https://github.com/nexus-upc/rinde-services.git
+cd rinde-services
+git switch develop
+git switch -c feature/<tarea>
 ```
 
-## Configuración
+## Compilar y probar
 
-Los datos de conexión y los secretos se leen del archivo `.env` en la raíz del proyecto, que no se sube al repositorio. Copia `.env.example` como `.env` y completa los valores.
+Requiere Java 21, PostgreSQL y RabbitMQ. Cada componente lee su propio `.env`: copiar el `.env.example` de su carpeta y completar los valores. Las pruebas usan `rinde_test`, `rinde_iam_test`, `rinde_trip_test`, `rinde_fleet_test` y `rinde_expense_test`.
 
-## Ejecutar
-
-El webhook de pago simulado usa la variable `RINDE_BILLING_SIMULATION_WEBHOOK_SECRET`, definida en el `.env`. Configura el mismo valor en el entorno de Postman que firme los webhooks.
-
-```
-mvnw.cmd spring-boot:run
+```powershell
+.\mvnw.cmd clean verify
+.\mvnw.cmd -pl services/trip -am clean verify
 ```
 
-Swagger: http://localhost:8080/swagger-ui.html
+El primer comando prueba todo el reactor; el segundo, un solo servicio con la librería.
 
-Pruebas:
+## Docker Compose
 
+```powershell
+Copy-Item infra/.env.example .env.compose
+docker compose --env-file .env.compose up -d --build
 ```
-mvnw.cmd clean verify
-```
 
-## Tareas
+Levanta el gateway, IAM, Trip, Fleet, Expense, core, RabbitMQ y una instancia de PostgreSQL por servicio. Las bases y el broker no se publican al host y los puertos HTTP escuchan solo en 127.0.0.1. Swagger de todos los servicios: http://localhost:8000/swagger-ui.html.
 
-El avance de cada integrante está en [TODO.md](TODO.md).
+`pwsh -File tests/deployment/verify.ps1 -Build` levanta un entorno temporal, comprueba el flujo entre procesos y lo elimina. Requiere PowerShell 7.2 o superior.
 
-## Notifications y RabbitMQ (S2-08)
+## Reglas
 
-Notifications recibe JSON desde el exchange durable `rinde.events`, con la routing key
-`trip.assigned` y la cola durable `notification.trip-assigned`. El contrato conserva `eventId`,
-`occurredAt`, `tenantId`, `tripId`, `code`, `destination`, `departureDate`, `vehicleId` y `driverId`.
-El consumidor usa un DTO propio y no necesita cargar clases Java del servicio Trip.
+- Ramas `feature/<tarea>` desde `develop`, integradas con `merge --no-ff`. Conventional Commits en inglés, solo título.
+- Un servicio no importa clases de otro contexto: usa HTTP con DTO propios o eventos de RabbitMQ, e ignora los eventos repetidos por `eventId`.
+- Ningún servicio lee las tablas de otro.
+- `mvnw.cmd clean verify` en verde antes de integrar.
+- Tags por componente (`iam/vX.Y.Z`, `trip/vX.Y.Z`, `fleet/vX.Y.Z`). Los tags históricos `v0.1.0` y `v0.2.0` no se cambian.
 
-`eventId` identifica el aviso en `notification.retry_store`. Una entrega repetida conserva el
-registro y no vuelve a enviar el aviso. El adaptador push sigue sin proveedor: deja el aviso
-pendiente y aplica las esperas de 1, 2, 4, 8 y 16 minutos. No se presenta como un envío push real.
+## Límites conocidos
 
-Un fallo al guardar el aviso reintenta el mensaje hasta tres veces; al agotarse queda en
-`notification.trip-assigned.dead`. Un JSON inválido también se conserva en esa cola.
-El listener local se mantiene durante la migración para los viajes que aún se asignen en el monolito.
-Si el mismo evento llega por ambos canales, usa el mismo registro de idempotencia.
-
-La conexión se configura con las variables `RABBITMQ_*` de `.env.example`. Las pruebas de mensajería
-usan colas aisladas con nombres aleatorios y requieren RabbitMQ y `rinde_test` disponibles.
-
-## Suscripciones e IAM separado (S2-09)
-
-Después del commit del pago o del cambio de estado, se publican `subscription.activated` y
-`subscription.suspended` en `rinde.events`. El JSON contiene `eventId`, `occurredAt` y `tenantId`.
-El productor declara también la cola durable `iam.subscription-events` y sus bindings, de modo
-que el mensaje quede guardado aunque IAM aún no haya arrancado. Ambos procesos deben usar los
-mismos valores de `RINDE_EVENTS_EXCHANGE` y `RINDE_IAM_SUBSCRIPTION_QUEUE`.
-
-Se solicitan confirmaciones del broker y devolución de mensajes sin ruta. Los fallos de conexión
-se reintentan hasta tres veces. Si no se confirma la publicación, el error registra el eventId
-y requiere conciliación: no hay outbox transaccional ni recuperación automática de una caída
-del proceso entre el commit y la publicación. Esa garantía queda fuera del Sprint 2.
-
-IAM aplica el mensaje y registra su identificador en su propia base. Notifications y Fleet
-mantienen los eventos locales que ya consumían; no se eliminan contextos del monolito.
-Las pruebas de esta tarea verifican el pago, el contrato del productor, los commits y rollbacks,
-y el consumidor de IAM por separado.
-
-## Integración de la web con IAM y suscripciones
-
-Por defecto, `RINDE_IAM_REMOTE_ENABLED=true` selecciona la fachada HTTP de IAM y
-`IAM_SERVICE_URL` apunta a `http://localhost:8081`. Los contextos del monolito consultan usuarios,
-estado de empresa y correo del administrador por HTTP. No se copian filas de IAM a la base local.
-Si IAM no responde, la API informa 503. El listener local de suscripciones de IAM queda desactivado
-en este modo: la actualización de la empresa llega al servicio separado por RabbitMQ.
-
-Para conservar la ejecución histórica del monolito completo puede usarse
-`RINDE_IAM_REMOTE_ENABLED=false`. Las pruebas existentes seleccionan este modo expresamente.
-
-`GET /api/v1/subscriptions/current` consulta la suscripción de la empresa autenticada y devuelve
-204 cuando aún no tiene una. Prioriza la suscripción pendiente de pago frente a una anterior;
-de otro modo elige la de vigencia más reciente. Cada consulta sigue limitada a su empresa.
-
-El checkout agrega `confirmationEnabled`. Solo con `RINDE_BILLING_SIMULATION_ENABLED=true`
-se registra `POST /api/v1/subscriptions/{id}/payments/{paymentId}/simulation`, que recibe
-`{"status":"CONFIRMED"}` o `{"status":"REJECTED"}`. Exige administrador y valida la empresa y la
-suscripción del pago. Reutiliza el procesamiento idempotente del webhook sin entregar su clave
-HMAC a la web. La simulación está desactivada por defecto y debe habilitarse solo para pruebas.
+- Pagos simulados: no hay pasarela bancaria. Correo y push sin proveedor; IAM puede guardar los enlaces de acceso en un buzón de demostración (ver `services/iam`).
+- Los eventos se publican después del commit, sin outbox: una caída entre ambos pasos puede perder un evento.
+- Incident Management no está implementado.

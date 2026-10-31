@@ -1,0 +1,42 @@
+package com.nexus.rinde.configuration;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * Describe la API en Swagger UI y declara el esquema Bearer para probar los endpoints protegidos.
+ */
+@Configuration
+public class OpenApiConfiguration {
+
+  public static final String BEARER_SCHEME = "bearerAuth";
+
+  @Bean
+  public OpenAPI rindeOpenApi() {
+    return new OpenAPI()
+        // Ruta relativa: funciona desde el gateway y desde el servicio directo.
+        .servers(List.of(new Server().url("/")))
+        .info(
+            new Info()
+                .title("RINDE Trip API")
+                .version("v1")
+                .description(
+                    "Servicio de Trip Management de RINDE by NEXUS: programación, asignación e inicio y fin de viajes."))
+        .components(
+            new Components()
+                .addSecuritySchemes(
+                    BEARER_SCHEME,
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")))
+        .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME));
+  }
+}
