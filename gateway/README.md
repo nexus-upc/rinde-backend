@@ -1,6 +1,6 @@
 # rinde-gateway
 
-Puerta de enlace de RINDE by NEXUS. Recibe las peticiones de `rinde-web` en el puerto 8000, valida el token de acceso y las reenvía a `rinde-iam-service`, `rinde-trip-service` o al monolito. Está hecha con Spring Cloud Gateway (WebFlux), Java 21 y Maven.
+Puerta de enlace de RINDE by NEXUS. Recibe las peticiones de `rinde-web` en el puerto 8000, valida el token de acceso y las reenvía a IAM, Trip, Fleet, Expense o al monolito (core). Está hecha con Spring Cloud Gateway (WebFlux), Java 21 y Maven.
 
 El gateway no tiene lógica de negocio. Los servicios vuelven a validar el token, así que el encabezado `Authorization` se reenvía sin cambios.
 
@@ -11,17 +11,21 @@ El gateway no tiene lógica de negocio. Los servicios vuelven a validar el token
 | `/api/v1/platform/auth/**`, `/api/v1/platform/me`, `/api/v1/platform/overview`, `/api/v1/platform/companies/**`, `/api/v1/platform/audit/identity`, `/api/v1/platform/demo-mailbox/**` | IAM | `IAM_SERVICE_URL` |
 | `/api/v1/platform/billing/**`, `/api/v1/platform/plans/**`, `/api/v1/platform/subscriptions/**`, `/api/v1/platform/payments/**`, `/api/v1/platform/audit/billing` | Monolito (Subscriptions & Billing) | `MONOLITH_URL` |
 | `/api/v1/auth/**`, `/api/v1/tenants/**`, `/api/v1/users/**`, `/api/v1/demo/features` | IAM (`/api/v1/...`) | `IAM_SERVICE_URL` |
-| `/api/v1/trips/{id}/expenses/**`, `/api/v1/trips/{id}/settlement/**` | Monolito (Expense y Settlement) | `MONOLITH_URL` |
+| `/api/v1/trips/{id}/settlement/**` | Monolito (Settlement) | `MONOLITH_URL` |
+| `/api/v1/trips/{id}/expenses/**`, `/api/v1/expenses/**` | Expense | `EXPENSE_SERVICE_URL` |
 | `/api/v1/trips`, `/api/v1/trips/**` (resto de viajes) | Trip (`/api/v1/trips/...`) | `TRIP_SERVICE_URL` |
+| `/api/v1/vehicles/**`, `/api/v1/drivers/**`, `/api/v1/maintenances/**` | Fleet | `FLEET_SERVICE_URL` |
 | `/api/v1/**` (resto de rutas) | Monolito | `MONOLITH_URL` |
 | `/v3/api-docs/iam` | IAM (`/v3/api-docs`) | `IAM_SERVICE_URL` |
 | `/v3/api-docs/trip` | Trip (`/v3/api-docs`) | `TRIP_SERVICE_URL` |
+| `/v3/api-docs/fleet` | Fleet (`/v3/api-docs`) | `FLEET_SERVICE_URL` |
+| `/v3/api-docs/expense` | Expense (`/v3/api-docs`) | `EXPENSE_SERVICE_URL` |
 | `/v3/api-docs/monolith` | Monolito (`/v3/api-docs`) | `MONOLITH_URL` |
-| `/swagger-ui.html` | Swagger UI con los documentos de IAM, Trip y del monolito | |
+| `/swagger-ui.html` | Swagger UI con los documentos de todos los servicios | |
 | `/api/internal/**` | Ninguno. Responde 404 y nunca se reenvía | |
 | `/actuator/health` | Estado del propio gateway | |
 
-Las rutas se declaran en el orden del `order` de `application.yml`, y gana la primera que coincide. Las rutas de IAM y las de gastos y liquidación de viajes van antes que los comodines, para que las subrutas de viajes que siguen en el monolito no pasen a Trip.
+Las rutas se declaran en el orden del `order` de `application.yml`, y gana la primera que coincide. Las rutas de IAM, de liquidación y de gastos van antes que los comodines, para que esas subrutas de viajes no pasen a Trip.
 
 ## Rutas sin token
 
@@ -57,19 +61,14 @@ Las variables se leen del archivo `.env` de la raíz, que no se sube a Git. Copi
 | `RINDE_PLATFORM_JWT_SECRET` | No | Ninguno | Secreto de los tokens de plataforma, distinto de `JWT_SECRET`. Sin él no se acepta ningún token de plataforma. |
 | `IAM_SERVICE_URL` | No | `http://localhost:8081` | Dirección de `rinde-iam-service`. |
 | `TRIP_SERVICE_URL` | No | `http://localhost:8082` | Dirección de `rinde-trip-service`. |
+| `FLEET_SERVICE_URL` | No | `http://localhost:8083` | Dirección de `rinde-fleet-service`. |
+| `EXPENSE_SERVICE_URL` | No | `http://localhost:8084` | Dirección de `rinde-expense-service`. |
 | `MONOLITH_URL` | No | `http://localhost:8080` | Dirección del monolito `rinde-backend`. |
 | `CORS_ALLOWED_ORIGINS` | No | `http://localhost:4200` | Orígenes permitidos, separados por comas. |
 
 ## Puesta en marcha
 
-El gateway depende de otros servicios para responder a las rutas de negocio. El orden recomendado es el siguiente:
-
-1. Iniciar `rinde-iam-service` en el puerto 8081 con `.\mvnw.cmd spring-boot:run`. Requiere PostgreSQL con la base `rinde_iam`.
-2. Iniciar `rinde-trip-service` en el puerto 8082 con `.\mvnw.cmd spring-boot:run`. Requiere PostgreSQL con la base `rinde_trip` y RabbitMQ.
-3. Iniciar el monolito `rinde-backend` en el puerto 8080 con `.\mvnw.cmd spring-boot:run`.
-4. Iniciar el gateway en el puerto 8000 con `.\mvnw.cmd spring-boot:run`.
-
-Para comprobar que el gateway está activo, consultar `http://localhost:8000/actuator/health`. Para revisar la documentación, abrir `http://localhost:8000/swagger-ui.html`.
+Lo más simple es levantar todo con Docker Compose desde la raíz del monorepo (ver el README raíz). Para ejecutarlo solo, iniciar antes los servicios a los que enruta y luego `.\mvnw.cmd spring-boot:run` en esta carpeta. El estado está en `http://localhost:8000/actuator/health` y la documentación en `http://localhost:8000/swagger-ui.html`.
 
 ## Pruebas
 
@@ -77,4 +76,4 @@ Para comprobar que el gateway está activo, consultar `http://localhost:8000/act
 .\mvnw.cmd clean verify
 ```
 
-Las pruebas no necesitan IAM ni el monolito en ejecución. Usan tres servidores WireMock que hacen de servicios (IAM, Trip y el monolito) y un secreto JWT de prueba, distinto de cualquier entorno real. Cubren el enrutamiento a Trip y al monolito, la validación del token, las rutas públicas, `/api/internal`, CORS y la propagación de `X-Correlation-Id`.
+Las pruebas no necesitan los servicios en ejecución. Usan servidores WireMock en lugar de IAM, Trip, Fleet, Expense y el monolito, y un secreto JWT de prueba, distinto de cualquier entorno real. Cubren el enrutamiento a cada servicio, la validación del token, las rutas públicas, `/api/internal`, CORS y la propagación de `X-Correlation-Id`.

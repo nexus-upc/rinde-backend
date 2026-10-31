@@ -19,7 +19,7 @@ Los secretos y los datos de conexión se leen del archivo `.env` en la raíz del
 | `DB_USERNAME` | Usuario de PostgreSQL. |
 | `DB_PASSWORD` | Contraseña de PostgreSQL. |
 | `JWT_SECRET` | Secreto de firma de los tokens. Debe ser el mismo que usa IAM y tener al menos 32 caracteres. |
-| `FLEET_SERVICE_URL` | Base de las consultas internas de Fleet. Por defecto `http://localhost:8080`, el monolito, hasta la tarea S2-04. |
+| `FLEET_SERVICE_URL` | Base de las consultas internas de Fleet. Por defecto `http://localhost:8083`. |
 | `IAM_SERVICE_URL` | Base de IAM & Tenancy. Por defecto `http://localhost:8081`. |
 | `RABBITMQ_HOST`, `RABBITMQ_PORT` | Broker de mensajería. Por defecto `localhost` y `5672`. |
 | `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD` | Credenciales del broker. Por defecto `guest` y `guest`. |
@@ -79,11 +79,11 @@ Los llaman otros servicios de RINDE sin JWT. El gateway no los enruta. Están do
 | GET | `/api/internal/v1/trips/tenants/{tenantId}/{tripId}` | Resumen del viaje: `tripId`, `code`, `status`, `origin`, `destination`, `cargoDescription`, `cargoWeightKg`, `departureDate`, `vehicleId`, `driverId`, `startedAt` y `finishedAt`. |
 | GET | `/api/internal/v1/trips/tenants/{tenantId}/{tripId}/status` | `{tripId, status}` con el estado actual del viaje. |
 
-Si el viaje no existe en la empresa, responde 404. Estos endpoints reemplazan la fachada `TripContextFacade` del monolito. Los consumen Expense (estado del viaje), Dashboard (resumen y listado) y Settlement.
+Si el viaje no existe en la empresa, responde 404. Estos endpoints reemplazan la fachada `TripContextFacade` del monolito. Los consumen Expense (estado del viaje) y Dashboard (resumen y listado).
 
 ## Fleet: contrato que consume
 
-Trip consulta a Fleet con las rutas siguientes. Fleet & Maintenance debe implementarlas en la tarea S2-04 (Mathias). Trip no envía JWT en estas consultas.
+Trip consulta a Fleet con las rutas siguientes, sin JWT.
 
 | Método | Ruta | Respuesta 200 | Respuesta 404 |
 | --- | --- | --- | --- |
@@ -129,6 +129,5 @@ El paquete `com.nexus.rinde.trip` se organiza en las capas `domain`, `applicatio
 
 ## Límites conocidos
 
-- Los contratos internos de Fleet ya se exponen desde core. La asignación y el ciclo se comprobaron entre procesos reales. Falta trasladar Fleet a su servicio independiente.
 - La publicación después del commit no usa una tabla de salida (outbox). Si el broker cae justo después de guardar el viaje, ese evento se pierde y solo queda en el log.
-- El monolito conserva su propio módulo de viajes. Su retiro requiere la autorización de Pedro y el cambio de sus consumidores de eventos.
+- Core conserva una copia antigua del módulo de viajes que ya no recibe tráfico. Su retiro requiere la autorización de Pedro.
